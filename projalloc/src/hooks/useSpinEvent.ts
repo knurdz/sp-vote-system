@@ -11,7 +11,10 @@ export function useSpinEvent(projectId: string | undefined) {
   const [error, setError] = useState<string | null>(null)
 
   const fetchSpinData = useCallback(async () => {
-    if (!projectId) return
+    if (!projectId) {
+      setLoading(false)
+      return
+    }
 
     const { data: event, error: eventErr } = await supabase
       .from('spin_events')
