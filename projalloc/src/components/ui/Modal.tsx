@@ -8,16 +8,28 @@ interface ModalProps {
   title: string
   children: React.ReactNode
   footer?: React.ReactNode
-  size?: 'md' | 'lg' | 'xl'
+  size?: 'md' | 'lg' | 'xl' | '2xl'
+  contentClassName?: string
+  headerClassName?: string
 }
 
 const sizeClasses = {
   md: 'max-w-lg',
   lg: 'max-w-2xl',
   xl: 'max-w-3xl',
+  '2xl': 'max-w-4xl',
 }
 
-export function Modal({ open, onClose, title, children, footer, size = 'md' }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  footer,
+  size = 'md',
+  contentClassName,
+  headerClassName,
+}: ModalProps) {
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => {
@@ -45,15 +57,22 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: M
         aria-modal
         aria-labelledby="modal-title"
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-4 sm:px-6">
-          <h2 id="modal-title" className="text-lg font-semibold text-text-primary">
+        <div
+          className={cn(
+            'flex shrink-0 items-center justify-between border-b border-border px-4 py-3 sm:px-5',
+            headerClassName,
+          )}
+        >
+          <h2 id="modal-title" className="truncate pr-4 text-base font-semibold text-text-primary">
             {title}
           </h2>
           <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
             ✕
           </Button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6">{children}</div>
+        <div className={cn('min-h-0 flex-1 overflow-y-auto px-4 py-3 sm:px-5', contentClassName)}>
+          {children}
+        </div>
         {footer && (
           <div className="flex shrink-0 justify-end gap-3 border-t border-border px-4 py-4 sm:px-6">
             {footer}

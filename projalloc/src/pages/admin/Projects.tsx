@@ -7,6 +7,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Spinner } from '@/components/ui/Spinner'
 import { Alert } from '@/components/ui/Alert'
 import { ProjectForm, type ProjectFormData } from '@/components/projects/ProjectForm'
+import { SpinModal } from '@/components/spin/SpinModal'
 import { useProjects } from '@/hooks/useProjects'
 import { projectHasVotes } from '@/hooks/useTeams'
 import { supabase } from '@/lib/supabase'
@@ -20,6 +21,7 @@ export function AdminProjects() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [spinProject, setSpinProject] = useState<Project | null>(null)
 
   const handleSave = async (data: ProjectFormData) => {
     if (editing) {
@@ -42,14 +44,21 @@ export function AdminProjects() {
 
   const handleDelete = async (project: Project) => {
     setDeleteError(null)
-    const hasVotes = await projectHasVotes(project.id)
-    if (hasVotes) {
-      setDeleteError(`Cannot delete "${project.title}" — it has votes.`)
-      return
-    }
-    if (!confirm(`Delete "${project.title}"?`)) return
 
-    const { error: err } = await supabase.from('projects').delete().eq('id', project.id)
+    const hasVotes = await projectHasVotes(project.id)
+    const hasRelatedData =
+      hasVotes || project.status === 'closed' || project.status === 'assigned'
+
+    const message = hasRelatedData
+      ? `Delete "${project.title}" and all votes/spin history? This cannot be undone.`
+      : `Delete "${project.title}"?`
+
+    if (!confirm(message)) return
+
+    const { error: err } = await supabase.rpc('admin_delete_project', {
+      p_project_id: project.id,
+    })
+
     if (err) {
       setDeleteError(err.message)
       return
@@ -120,11 +129,13 @@ export function AdminProjects() {
                         Edit
                       </Button>
                       {(project.status === 'closed' || project.status === 'assigned') && (
-                        <Link to={`/admin/spin/${project.id}`}>
-                          <Button size="sm" variant="secondary">
-                            Spin
-                          </Button>
-                        </Link>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setSpinProject(project)}
+                        >
+                          Spin
+                        </Button>
                       )}
                       <Button
                         size="sm"
@@ -160,6 +171,16 @@ export function AdminProjects() {
           }}
         />
       </Modal>
+
+      <SpinModal
+        project={spinProject}
+        open={!!spinProject}
+        onClose={() => setSpinProject(null)}
+        onLocked={() => {
+          setSpinProject(null)
+          void refetch()
+        }}
+      />
     </PageWrapper>
   )
 }

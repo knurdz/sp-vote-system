@@ -1,0 +1,414 @@
+import { useEffect, useState } from 'react'
+import { Modal } from '@/components/ui/Modal'
+import { Button } from '@/components/ui/Button'
+import { Spinner } from '@/components/ui/Spinner'
+import { Alert } from '@/components/ui/Alert'
+import { DateTimePicker } from '@/components/ui/DateTimePicker'
+import { SpinWheel } from '@/components/spin/SpinWheel'
+import { SpinResult } from '@/components/spin/SpinResult'
+import { useSpinEvent } from '@/hooks/useSpinEvent'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
+import { formatDateTime, fromDatetimeLocalValue, toDatetimeLocalValue } from '@/lib/utils'
+import type { Project } from '@/types'
+
+interface SpinModalProps {
+  project: Project | null
+  open: boolean
+  onClose: () => void
+  onLocked?: () => void
+}
+
+function useSpinWheelSize(active: boolean) {
+  const [wheelSize, setWheelSize] = useState(300)
+
+  useEffect(() => {
+    if (!active) return
+
+    const update = () => {
+      const reserved = 200
+      const byHeight = window.innerHeight * 0.92 - reserved
+      const byWidth = Math.min(window.innerWidth, 440) - 48
+      const maxWheel = Math.min(320, byHeight, byWidth)
+      setWheelSize(Math.max(260, Math.floor(maxWheel)))
+    }
+
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [active])
+
+  return wheelSize
+}
+
+function CalendarIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </svg>
+  )
+}
+
+export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) {
+  const projectId = project?.id
+  const { spinEvent, spinLog, candidates, loading, error, isLocked, refetch } =
+    useSpinEvent(open ? projectId : undefined)
+  const { profile, user } = useAuth()
+
+  const [winner, setWinner] = useState<{ id: string; name: string } | null>(null)
+  const [showResult, setShowResult] = useState(false)
+  const [locking, setLocking] = useState(false)
+  const [lockError, setLockError] = useState<string | null>(null)
+  const [scheduleOpen, setScheduleOpen] = useState(false)
+
+  const [zoomLink, setZoomLink] = useState('')
+  const [scheduledAt, setScheduledAt] = useState('')
+  const [scheduling, setScheduling] = useState(false)
+  const [scheduleError, setScheduleError] = useState<string | null>(null)
+
+  const wheelSize = useSpinWheelSize(open && !!project)
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !showResult && !scheduleOpen) onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose, showResult, scheduleOpen])
+
+  useEffect(() => {
+    if (!open) {
+      setWinner(null)
+      setShowResult(false)
+      setLockError(null)
+      setScheduleError(null)
+      setScheduleOpen(false)
+      setZoomLink('')
+      setScheduledAt('')
+    }
+  }, [open, projectId])
+
+  const handleSchedule = async () => {
+    if (!projectId) return
+    setScheduling(true)
+    setScheduleError(null)
+
+    const payload = {
+      project_id: projectId,
+      zoom_link: zoomLink || null,
+      scheduled_at: scheduledAt ? fromDatetimeLocalValue(scheduledAt) : null,
+    }
+
+    const { error: err } = spinEvent
+      ? await supabase.from('spin_events').update(payload).eq('id', spinEvent.id)
+      : await supabase.from('spin_events').insert(payload)
+
+    setScheduling(false)
+    if (err) {
+      setScheduleError(err.message)
+      return
+    }
+    await refetch()
+    setScheduleOpen(false)
+  }
+
+  const handleLock = async () => {
+    if (!winner || !project || !projectId) {
+      setLockError('Missing spin result.')
+      return
+    }
+
+    const triggeredBy = profile?.id ?? user?.id
+    if (!triggeredBy) {
+      setLockError('You must be signed in to lock results.')
+      return
+    }
+
+    setLocking(true)
+    setLockError(null)
+
+    let eventId = spinEvent?.id
+
+    if (!eventId) {
+      const { data: created, error: createErr } = await supabase
+        .from('spin_events')
+        .insert({
+          project_id: projectId,
+          zoom_link: zoomLink || spinEvent?.zoom_link || null,
+          scheduled_at: scheduledAt
+            ? fromDatetimeLocalValue(scheduledAt)
+            : spinEvent?.scheduled_at ?? null,
+        })
+        .select('id')
+        .single()
+
+      if (createErr || !created) {
+        setLockError(createErr?.message ?? 'Failed to create spin event.')
+        setLocking(false)
+        return
+      }
+      eventId = created.id
+    }
+
+    const allCandidates = candidates.map((t) => ({
+      team_id: t.id,
+      team_name: t.name,
+    }))
+
+    const { error: logErr } = await supabase.from('spin_logs').insert({
+      spin_event_id: eventId,
+      all_candidates: allCandidates,
+      winning_team_name: winner.name,
+      project_title: project.title,
+      company: project.company,
+    })
+
+    if (logErr) {
+      setLockError(logErr.message)
+      setLocking(false)
+      return
+    }
+
+    const { error: eventErr } = await supabase
+      .from('spin_events')
+      .update({
+        spun_at: new Date().toISOString(),
+        winning_team_id: winner.id,
+        triggered_by: triggeredBy,
+      })
+      .eq('id', eventId)
+
+    if (eventErr) {
+      setLockError(eventErr.message)
+      setLocking(false)
+      return
+    }
+
+    const { error: projectErr } = await supabase
+      .from('projects')
+      .update({ status: 'assigned' })
+      .eq('id', project.id)
+
+    if (projectErr) {
+      setLockError(projectErr.message)
+      setLocking(false)
+      return
+    }
+
+    await supabase
+      .from('votes')
+      .delete()
+      .eq('team_id', winner.id)
+      .neq('project_id', project.id)
+
+    setLocking(false)
+    setShowResult(false)
+    setWinner(null)
+    await refetch()
+    onLocked?.()
+  }
+
+  const copyZoomLink = () => {
+    if (spinEvent?.zoom_link) {
+      void navigator.clipboard.writeText(spinEvent.zoom_link)
+    }
+  }
+
+  const inputClass = 'input-field input-field-focus'
+
+  if (!open || !project) return null
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          className="absolute inset-0 bg-black/80 backdrop-blur-md"
+          onClick={() => {
+            if (!showResult && !scheduleOpen) onClose()
+          }}
+          aria-hidden
+        />
+
+        <div
+          className="spin-overlay-card relative z-10"
+          role="dialog"
+          aria-modal
+          aria-labelledby="spin-title"
+        >
+          <div className="spin-overlay-accent" />
+
+          {/* Header */}
+          <div className="flex shrink-0 items-start justify-between gap-3 px-5 pb-3 pt-4">
+            <div className="min-w-0">
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-accent">
+                Team allocation
+              </p>
+              <h2 id="spin-title" className="truncate text-lg font-semibold text-text-primary">
+                {project.title}
+              </h2>
+              <p className="text-sm text-text-secondary">{project.company}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              {!isLocked && (
+                <button
+                  type="button"
+                  onClick={() => setScheduleOpen(true)}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-secondary transition-colors hover:border-accent/40 hover:text-accent"
+                  aria-label="Schedule spin event"
+                  title="Schedule event"
+                >
+                  <CalendarIcon />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={showResult}
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-muted transition-colors hover:border-border hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div className="flex min-h-0 flex-1 flex-col items-center overflow-hidden px-5 pb-5">
+            {loading ? (
+              <div className="flex flex-1 items-center justify-center py-12">
+                <Spinner />
+              </div>
+            ) : (
+              <>
+                {error && (
+                  <div className="mb-3 w-full">
+                    <Alert message={error} />
+                  </div>
+                )}
+                {lockError && !showResult && (
+                  <div className="mb-3 w-full">
+                    <Alert message={lockError} />
+                  </div>
+                )}
+
+                {/* Candidates */}
+                <div className="mb-3 w-full">
+                  <p className="mb-2 text-center text-[11px] font-medium uppercase tracking-wider text-text-muted">
+                    {candidates.length} {candidates.length === 1 ? 'team' : 'teams'} on the wheel
+                  </p>
+                  {candidates.length > 0 && (
+                    <div className="flex flex-wrap justify-center gap-1.5">
+                      {candidates.map((t) => (
+                        <span key={t.id} className="spin-candidate-pill">
+                          {t.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Wheel or locked result */}
+                <div className="flex flex-1 flex-col items-center justify-center">
+                  {isLocked && spinLog ? (
+                    <div className="w-full rounded-card border border-accent/25 bg-accent-glow px-6 py-10 text-center">
+                      <div className="mb-3 text-5xl">🏆</div>
+                      <p className="text-xs font-medium uppercase tracking-wider text-text-secondary">
+                        Winner locked
+                      </p>
+                      <p className="mt-2 text-2xl font-bold text-accent-hover">
+                        {spinLog.winning_team_name}
+                      </p>
+                    </div>
+                  ) : (
+                    <SpinWheel
+                      size={wheelSize}
+                      compact
+                      candidates={candidates.map((t) => ({ id: t.id, name: t.name }))}
+                      disabled={isLocked || showResult}
+                      onSpinComplete={(w) => {
+                        setWinner(w)
+                        setLockError(null)
+                        setShowResult(true)
+                      }}
+                    />
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Schedule sub-modal */}
+      <Modal
+        open={scheduleOpen}
+        onClose={() => setScheduleOpen(false)}
+        title="Schedule Spin Event"
+        size="lg"
+      >
+        <div className="space-y-4">
+          {spinEvent?.zoom_link && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-text-secondary">Current Zoom:</span>
+              <a
+                href={spinEvent.zoom_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-accent-hover hover:underline"
+              >
+                {spinEvent.zoom_link}
+              </a>
+              <Button size="sm" variant="secondary" onClick={copyZoomLink}>
+                Copy
+              </Button>
+            </div>
+          )}
+
+          {spinEvent?.scheduled_at && (
+            <p className="text-sm text-text-secondary">
+              Scheduled: {formatDateTime(spinEvent.scheduled_at)}
+            </p>
+          )}
+
+          <div>
+            <label className="mb-1 block text-sm text-text-secondary">Zoom Link</label>
+            <input
+              className={inputClass}
+              value={zoomLink || spinEvent?.zoom_link || ''}
+              onChange={(e) => setZoomLink(e.target.value)}
+              placeholder="https://zoom.us/j/..."
+            />
+          </div>
+          <DateTimePicker
+            compact
+            label="Scheduled At"
+            value={
+              scheduledAt ||
+              (spinEvent?.scheduled_at ? toDatetimeLocalValue(spinEvent.scheduled_at) : '')
+            }
+            onChange={setScheduledAt}
+          />
+          {scheduleError && <Alert message={scheduleError} />}
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setScheduleOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={() => void handleSchedule()} disabled={scheduling}>
+            {scheduling ? 'Saving…' : spinEvent ? 'Update' : 'Save'}
+          </Button>
+        </div>
+      </Modal>
+
+      <SpinResult
+        open={showResult}
+        winnerName={winner?.name ?? ''}
+        onConfirm={() => void handleLock()}
+        loading={locking}
+        error={lockError}
+      />
+    </>
+  )
+}
