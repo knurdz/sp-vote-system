@@ -14,8 +14,12 @@ function formatDuration(totalSeconds: number) {
     d.days ? `${d.days}d` : null,
     d.hours ? `${d.hours}h` : null,
     d.minutes ? `${d.minutes}m` : null,
-    `${d.seconds ?? 0}s`,
   ].filter(Boolean)
+
+  if (parts.length === 0 && totalSeconds > 0) {
+    return '< 1m'
+  }
+
   return parts.join(' ')
 }
 

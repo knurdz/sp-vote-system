@@ -7,8 +7,10 @@ import { Spinner } from '@/components/ui/Spinner'
 import { Alert } from '@/components/ui/Alert'
 import { TeamCsvUpload } from '@/components/admin/TeamCsvUpload'
 import { useTeams, teamHasVotes } from '@/hooks/useTeams'
+import { useSubmitLock } from '@/hooks/useSubmitLock'
 import { supabase } from '@/lib/supabase'
 import { formatDateTime } from '@/lib/utils'
+import { formatZodErrors, teamSchema } from '@/lib/validations'
 import type { Team } from '@/types'
 
 export function AdminTeams() {
@@ -20,6 +22,7 @@ export function AdminTeams() {
   const [formError, setFormError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const { submitLocked, runLocked } = useSubmitLock()
 
   const openCreate = () => {
     setEditing(null)
@@ -38,23 +41,32 @@ export function AdminTeams() {
   }
 
   const handleSave = async () => {
-    setSaving(true)
-    setFormError(null)
+    await runLocked(async () => {
+      setSaving(true)
+      setFormError(null)
 
-    const payload = { name, leader_email: leaderEmail }
+      const parsed = teamSchema.safeParse({ name, leader_email: leaderEmail })
+      if (!parsed.success) {
+        setFormError(formatZodErrors(parsed.error))
+        setSaving(false)
+        return
+      }
 
-    const { error: err } = editing
-      ? await supabase.from('teams').update(payload).eq('id', editing.id)
-      : await supabase.from('teams').insert(payload)
+      const payload = parsed.data
 
-    setSaving(false)
-    if (err) {
-      setFormError(err.message)
-      return
-    }
+      const { error: err } = editing
+        ? await supabase.from('teams').update(payload).eq('id', editing.id)
+        : await supabase.from('teams').insert(payload)
 
-    setModalOpen(false)
-    await refetch()
+      setSaving(false)
+      if (err) {
+        setFormError(err.message)
+        return
+      }
+
+      setModalOpen(false)
+      await refetch()
+    })
   }
 
   const handleDelete = async (team: Team) => {
@@ -108,7 +120,6 @@ export function AdminTeams() {
             <thead className="border-b border-border bg-bg-surface">
               <tr>
                 <th className="px-4 py-3 font-medium text-text-secondary">Team Name</th>
-                <th className="px-4 py-3 font-medium text-text-secondary">Leader Email</th>
                 <th className="px-4 py-3 font-medium text-text-secondary">Registered</th>
                 <th className="px-4 py-3 font-medium text-text-secondary">Actions</th>
               </tr>
@@ -117,7 +128,6 @@ export function AdminTeams() {
               {teams.map((team) => (
                 <tr key={team.id} className="border-b border-border bg-bg-base">
                   <td className="px-4 py-3">{team.name}</td>
-                  <td className="px-4 py-3 font-mono text-text-secondary">{team.leader_email}</td>
                   <td className="px-4 py-3 text-text-secondary">
                     {formatDateTime(team.created_at)}
                   </td>
@@ -151,7 +161,7 @@ export function AdminTeams() {
             <Button variant="secondary" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => void handleSave()} disabled={saving}>
+            <Button onClick={() => void handleSave()} disabled={saving || submitLocked}>
               {saving ? 'Saving…' : 'Save'}
             </Button>
           </>
@@ -168,7 +178,7 @@ export function AdminTeams() {
             <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-text-secondary">Leader Gmail</label>
+            <label className="mb-1 block text-sm text-text-secondary">Account Email</label>
             <input
               type="email"
               className={inputClass}

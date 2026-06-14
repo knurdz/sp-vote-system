@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { usePolling } from '@/hooks/usePolling'
-import type { Team } from '@/types'
+import type { Role, Team } from '@/types'
 
 export function useTeams() {
   const [teams, setTeams] = useState<Team[]>([])
@@ -28,6 +28,34 @@ export function useTeams() {
   usePolling(fetchTeams, [])
 
   return { teams, loading, error, refetch: fetchTeams }
+}
+
+export function useUserTeam(email: string | undefined, role: Role | null) {
+  const [team, setTeam] = useState<Team | null>(null)
+
+  useEffect(() => {
+    if (!email || role !== 'leader') {
+      setTeam(null)
+      return
+    }
+
+    let mounted = true
+
+    void supabase
+      .from('teams')
+      .select('*')
+      .eq('leader_email', email)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (mounted) setTeam((data as Team | null) ?? null)
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [email, role])
+
+  return team
 }
 
 export async function teamHasVotes(teamId: string) {

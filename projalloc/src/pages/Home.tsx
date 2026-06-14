@@ -58,7 +58,7 @@ export function Home() {
               key={f.value}
               type="button"
               onClick={() => setFilter(f.value)}
-              className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-[13px] font-medium transition-all duration-150 ${
+              className={`flex cursor-pointer select-none items-center gap-2 rounded-lg px-4 py-1.5 text-[13px] font-medium transition-all duration-150 ${
                 active
                   ? 'bg-accent text-black shadow-accent-glow'
                   : 'text-text-secondary hover:text-text-primary'

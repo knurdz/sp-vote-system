@@ -7,10 +7,22 @@ import { DateTimePicker } from '@/components/ui/DateTimePicker'
 import { SpinWheel } from '@/components/spin/SpinWheel'
 import { SpinResult } from '@/components/spin/SpinResult'
 import { useSpinEvent } from '@/hooks/useSpinEvent'
+import { useSubmitLock } from '@/hooks/useSubmitLock'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { formatDateTime, fromDatetimeLocalValue, toDatetimeLocalValue } from '@/lib/utils'
+import { formatZodErrors, spinScheduleSchema } from '@/lib/validations'
 import type { Project } from '@/types'
+
+async function spinLogExists(spinEventId: string): Promise<boolean> {
+  const { count, error } = await supabase
+    .from('spin_logs')
+    .select('*', { count: 'exact', head: true })
+    .eq('spin_event_id', spinEventId)
+
+  if (error) return true
+  return (count ?? 0) > 0
+}
 
 interface SpinModalProps {
   project: Project | null
@@ -66,6 +78,8 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
   const [scheduledAt, setScheduledAt] = useState('')
   const [scheduling, setScheduling] = useState(false)
   const [scheduleError, setScheduleError] = useState<string | null>(null)
+  const { submitLocked: scheduleSubmitLocked, runLocked: runScheduleLocked } = useSubmitLock()
+  const { submitLocked: lockSubmitLocked, runLocked: runLockLocked } = useSubmitLock()
 
   const wheelSize = useSpinWheelSize(open && !!project)
 
@@ -92,26 +106,46 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
 
   const handleSchedule = async () => {
     if (!projectId) return
-    setScheduling(true)
-    setScheduleError(null)
+    await runScheduleLocked(async () => {
+      setScheduling(true)
+      setScheduleError(null)
 
-    const payload = {
-      project_id: projectId,
-      zoom_link: zoomLink || null,
-      scheduled_at: scheduledAt ? fromDatetimeLocalValue(scheduledAt) : null,
-    }
+      const resolvedZoom = (zoomLink || spinEvent?.zoom_link || '').trim()
+      const resolvedSchedule =
+        scheduledAt ||
+        (spinEvent?.scheduled_at ? toDatetimeLocalValue(spinEvent.scheduled_at) : '')
 
-    const { error: err } = spinEvent
-      ? await supabase.from('spin_events').update(payload).eq('id', spinEvent.id)
-      : await supabase.from('spin_events').insert(payload)
+      const parsed = spinScheduleSchema.safeParse({
+        zoom_link: resolvedZoom,
+        scheduled_at: resolvedSchedule ? fromDatetimeLocalValue(resolvedSchedule) : '',
+      })
 
-    setScheduling(false)
-    if (err) {
-      setScheduleError(err.message)
-      return
-    }
-    await refetch()
-    setScheduleOpen(false)
+      if (!parsed.success) {
+        setScheduleError(formatZodErrors(parsed.error))
+        setScheduling(false)
+        return
+      }
+
+      const payload = {
+        project_id: projectId,
+        zoom_link: parsed.data.zoom_link || null,
+        scheduled_at: parsed.data.scheduled_at
+          ? fromDatetimeLocalValue(resolvedSchedule)
+          : null,
+      }
+
+      const { error: err } = spinEvent
+        ? await supabase.from('spin_events').update(payload).eq('id', spinEvent.id)
+        : await supabase.from('spin_events').insert(payload)
+
+      setScheduling(false)
+      if (err) {
+        setScheduleError(err.message)
+        return
+      }
+      await refetch()
+      setScheduleOpen(false)
+    })
   }
 
   const handleLock = async () => {
@@ -120,94 +154,128 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
       return
     }
 
-    const triggeredBy = profile?.id ?? user?.id
-    if (!triggeredBy) {
-      setLockError('You must be signed in to lock results.')
-      return
-    }
+    await runLockLocked(async () => {
+      const triggeredBy = profile?.id ?? user?.id
+      if (!triggeredBy) {
+        setLockError('You must be signed in to lock results.')
+        return
+      }
 
-    setLocking(true)
-    setLockError(null)
+      setLocking(true)
+      setLockError(null)
 
-    let eventId = spinEvent?.id
+      let eventId = spinEvent?.id
 
-    if (!eventId) {
-      const { data: created, error: createErr } = await supabase
-        .from('spin_events')
+      if (eventId && (await spinLogExists(eventId))) {
+        setLockError('Result already recorded.')
+        setLocking(false)
+        return
+      }
+
+      if (!eventId) {
+        const { data: created, error: createErr } = await supabase
+          .from('spin_events')
+          .insert({
+            project_id: projectId,
+            zoom_link: zoomLink || spinEvent?.zoom_link || null,
+            scheduled_at: scheduledAt
+              ? fromDatetimeLocalValue(scheduledAt)
+              : spinEvent?.scheduled_at ?? null,
+          })
+          .select('id')
+          .single()
+
+        if (createErr || !created) {
+          setLockError(createErr?.message ?? 'Failed to create spin event.')
+          setLocking(false)
+          return
+        }
+        eventId = created.id
+      }
+
+      const allCandidates = candidates.map((t) => ({
+        team_id: t.id,
+        team_name: t.name,
+      }))
+
+      const { data: insertedLog, error: logErr } = await supabase
+        .from('spin_logs')
         .insert({
-          project_id: projectId,
-          zoom_link: zoomLink || spinEvent?.zoom_link || null,
-          scheduled_at: scheduledAt
-            ? fromDatetimeLocalValue(scheduledAt)
-            : spinEvent?.scheduled_at ?? null,
+          spin_event_id: eventId,
+          all_candidates: allCandidates,
+          winning_team_name: winner.name,
+          project_title: project.title,
+          company: project.company,
         })
         .select('id')
         .single()
 
-      if (createErr || !created) {
-        setLockError(createErr?.message ?? 'Failed to create spin event.')
+      if (logErr || !insertedLog) {
+        setLockError(logErr?.message ?? 'Failed to record spin result.')
         setLocking(false)
         return
       }
-      eventId = created.id
-    }
 
-    const allCandidates = candidates.map((t) => ({
-      team_id: t.id,
-      team_name: t.name,
-    }))
+      const { data: verifiedLog, error: verifyErr } = await supabase
+        .from('spin_logs')
+        .select('id')
+        .eq('id', insertedLog.id)
+        .single()
 
-    const { error: logErr } = await supabase.from('spin_logs').insert({
-      spin_event_id: eventId,
-      all_candidates: allCandidates,
-      winning_team_name: winner.name,
-      project_title: project.title,
-      company: project.company,
+      if (verifyErr || !verifiedLog) {
+        setLockError('Could not verify spin result was saved.')
+        setLocking(false)
+        return
+      }
+
+      const { error: eventErr } = await supabase
+        .from('spin_events')
+        .update({
+          spun_at: new Date().toISOString(),
+          winning_team_id: winner.id,
+          triggered_by: triggeredBy,
+        })
+        .eq('id', eventId)
+
+      if (eventErr) {
+        setLockError(eventErr.message)
+        setLocking(false)
+        return
+      }
+
+      const { error: projectErr } = await supabase
+        .from('projects')
+        .update({ status: 'assigned' })
+        .eq('id', project.id)
+
+      if (projectErr) {
+        setLockError(projectErr.message)
+        setLocking(false)
+        return
+      }
+
+      await supabase
+        .from('votes')
+        .delete()
+        .eq('team_id', winner.id)
+        .neq('project_id', project.id)
+
+      setLocking(false)
+      setShowResult(false)
+      setWinner(null)
+      await refetch()
+      onLocked?.()
     })
+  }
 
-    if (logErr) {
-      setLockError(logErr.message)
-      setLocking(false)
+  const handleSpinComplete = async (w: { id: string; name: string }) => {
+    if (spinEvent?.id && (await spinLogExists(spinEvent.id))) {
+      setLockError('Result already recorded.')
       return
     }
-
-    const { error: eventErr } = await supabase
-      .from('spin_events')
-      .update({
-        spun_at: new Date().toISOString(),
-        winning_team_id: winner.id,
-        triggered_by: triggeredBy,
-      })
-      .eq('id', eventId)
-
-    if (eventErr) {
-      setLockError(eventErr.message)
-      setLocking(false)
-      return
-    }
-
-    const { error: projectErr } = await supabase
-      .from('projects')
-      .update({ status: 'assigned' })
-      .eq('id', project.id)
-
-    if (projectErr) {
-      setLockError(projectErr.message)
-      setLocking(false)
-      return
-    }
-
-    await supabase
-      .from('votes')
-      .delete()
-      .eq('team_id', winner.id)
-      .neq('project_id', project.id)
-
-    setLocking(false)
-    setShowResult(false)
-    setWinner(null)
-    await refetch()
-    onLocked?.()
+    setWinner(w)
+    setLockError(null)
+    setShowResult(true)
   }
 
   const copyZoomLink = () => {
@@ -327,11 +395,7 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
                       compact
                       candidates={candidates.map((t) => ({ id: t.id, name: t.name }))}
                       disabled={isLocked || showResult}
-                      onSpinComplete={(w) => {
-                        setWinner(w)
-                        setLockError(null)
-                        setShowResult(true)
-                      }}
+                      onSpinComplete={(w) => void handleSpinComplete(w)}
                     />
                   )}
                 </div>
@@ -396,7 +460,7 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
           <Button variant="secondary" onClick={() => setScheduleOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={() => void handleSchedule()} disabled={scheduling}>
+          <Button onClick={() => void handleSchedule()} disabled={scheduling || scheduleSubmitLocked}>
             {scheduling ? 'Saving…' : spinEvent ? 'Update' : 'Save'}
           </Button>
         </div>
@@ -406,7 +470,7 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
         open={showResult}
         winnerName={winner?.name ?? ''}
         onConfirm={() => void handleLock()}
-        loading={locking}
+        loading={locking || lockSubmitLocked}
         error={lockError}
       />
     </>
