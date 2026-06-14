@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from '@/components/layout/AuthProvider'
 import { AuthGuard } from '@/components/layout/AuthGuard'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import { Home } from '@/pages/Home'
@@ -15,6 +16,7 @@ import { AdminSpin } from '@/pages/admin/Spin'
 export default function App() {
   return (
     <BrowserRouter>
+      <AuthProvider>
       <AuthGuard>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -59,6 +61,7 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       </AuthGuard>
+      </AuthProvider>
     </BrowserRouter>
   )
 }

@@ -51,7 +51,7 @@ async function teamHasVoteOnProject(projectId: string, teamId: string): Promise<
 }
 
 export function useVote(projectId: string | undefined) {
-  const { user, role } = useAuth()
+  const { user, role, loading: authLoading } = useAuth()
   const [hasVoted, setHasVoted] = useState(false)
   const [voteId, setVoteId] = useState<string | null>(null)
   const [teamId, setTeamId] = useState<string | null>(null)
@@ -61,6 +61,8 @@ export function useVote(projectId: string | undefined) {
   const [error, setError] = useState<string | null>(null)
 
   const fetchVoteState = useCallback(async () => {
+    if (authLoading) return
+
     if (!projectId || !user?.email || role !== 'leader') {
       setLoading(false)
       return
@@ -98,9 +100,9 @@ export function useVote(projectId: string | undefined) {
     setHasVoted(!!vote)
     setVoteId(vote?.id ?? null)
     setLoading(false)
-  }, [projectId, user?.email, role])
+  }, [projectId, user?.email, role, authLoading])
 
-  usePolling(fetchVoteState, [projectId, user?.email, role])
+  usePolling(fetchVoteState, [projectId, user?.email, role, authLoading])
 
   const vote = useCallback(async () => {
     if (!projectId || !user?.email || !teamId || assignment) return
