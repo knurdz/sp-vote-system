@@ -120,7 +120,6 @@ export function AdminTeams() {
             <thead className="border-b border-border bg-bg-surface">
               <tr>
                 <th className="px-4 py-3 font-medium text-text-secondary">Team Name</th>
-                <th className="px-4 py-3 font-medium text-text-secondary">Leader Email</th>
                 <th className="px-4 py-3 font-medium text-text-secondary">Registered</th>
                 <th className="px-4 py-3 font-medium text-text-secondary">Actions</th>
               </tr>
@@ -129,7 +128,6 @@ export function AdminTeams() {
               {teams.map((team) => (
                 <tr key={team.id} className="border-b border-border bg-bg-base">
                   <td className="px-4 py-3">{team.name}</td>
-                  <td className="px-4 py-3 font-mono text-text-secondary">{team.leader_email}</td>
                   <td className="px-4 py-3 text-text-secondary">
                     {formatDateTime(team.created_at)}
                   </td>
@@ -180,7 +178,7 @@ export function AdminTeams() {
             <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-text-secondary">Leader Gmail</label>
+            <label className="mb-1 block text-sm text-text-secondary">Account Email</label>
             <input
               type="email"
               className={inputClass}

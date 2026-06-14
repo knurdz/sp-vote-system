@@ -6,6 +6,7 @@ import { ProjectDetail } from '@/pages/ProjectDetail'
 import { Results } from '@/pages/Results'
 import { Login } from '@/pages/Login'
 import { AccessDenied } from '@/pages/AccessDenied'
+import { NotFound } from '@/pages/NotFound'
 import { Dashboard } from '@/pages/admin/Dashboard'
 import { AdminProjects } from '@/pages/admin/Projects'
 import { AdminTeams } from '@/pages/admin/Teams'
@@ -54,6 +55,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
       </AuthGuard>
     </BrowserRouter>

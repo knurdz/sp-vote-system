@@ -51,10 +51,7 @@ export const teamSchema = z.object({
     .string()
     .trim()
     .toLowerCase()
-    .email('Invalid email address')
-    .refine((email) => email.endsWith('@gmail.com'), {
-      message: 'Leader email must be a Gmail address (@gmail.com)',
-    }),
+    .email('Invalid email address'),
 })
 
 export type TeamInput = z.infer<typeof teamSchema>
