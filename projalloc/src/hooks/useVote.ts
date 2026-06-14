@@ -28,6 +28,28 @@ async function fetchTeamAssignment(teamId: string): Promise<TeamAssignment | nul
   return null
 }
 
+async function isProjectVotingOpen(projectId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('status')
+    .eq('id', projectId)
+    .single()
+
+  if (error || !data) return false
+  return data.status === 'voting'
+}
+
+async function teamHasVoteOnProject(projectId: string, teamId: string): Promise<boolean> {
+  const { count, error } = await supabase
+    .from('votes')
+    .select('*', { count: 'exact', head: true })
+    .eq('project_id', projectId)
+    .eq('team_id', teamId)
+
+  if (error) return true
+  return (count ?? 0) > 0
+}
+
 export function useVote(projectId: string | undefined) {
   const { user, role } = useAuth()
   const [hasVoted, setHasVoted] = useState(false)
@@ -85,6 +107,21 @@ export function useVote(projectId: string | undefined) {
     setActionLoading(true)
     setError(null)
 
+    const votingOpen = await isProjectVotingOpen(projectId)
+    if (!votingOpen) {
+      setError('Voting is no longer open for this project.')
+      setActionLoading(false)
+      return
+    }
+
+    const alreadyVoted = await teamHasVoteOnProject(projectId, teamId)
+    if (alreadyVoted) {
+      setError('Your team has already voted on this project.')
+      setActionLoading(false)
+      await fetchVoteState()
+      return
+    }
+
     const { error: err } = await supabase.from('votes').insert({
       project_id: projectId,
       team_id: teamId,
@@ -100,9 +137,16 @@ export function useVote(projectId: string | undefined) {
   }, [projectId, user?.email, teamId, assignment, fetchVoteState])
 
   const withdraw = useCallback(async () => {
-    if (!voteId) return
+    if (!voteId || !projectId) return
     setActionLoading(true)
     setError(null)
+
+    const votingOpen = await isProjectVotingOpen(projectId)
+    if (!votingOpen) {
+      setError('Voting is closed — votes can no longer be withdrawn.')
+      setActionLoading(false)
+      return
+    }
 
     const { error: err } = await supabase.from('votes').delete().eq('id', voteId)
 
@@ -112,7 +156,7 @@ export function useVote(projectId: string | undefined) {
       return
     }
     await fetchVoteState()
-  }, [voteId, fetchVoteState])
+  }, [voteId, projectId, fetchVoteState])
 
   const assignedElsewhere =
     assignment !== null && assignment.projectId !== projectId

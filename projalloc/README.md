@@ -81,10 +81,9 @@ Open [http://localhost:5173](http://localhost:5173).
 3. **Project Settings → General → Root Directory:** set to `projalloc` (required).
 4. **Framework Preset:** Vite (auto-detected when root is `projalloc`).
 5. **Build Command:** `npm run build` · **Output Directory:** `dist` (defaults are fine).
-6. Add environment variables:
+6. Add environment variables (client-exposed `VITE_` prefix only):
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
-   - `VITE_ADMIN_EMAIL` (your admin Gmail)
 7. Redeploy after saving settings.
 8. In Supabase → Authentication → URL Configuration:
    - **Site URL:** `https://your-app.vercel.app`
@@ -118,3 +117,61 @@ Admins are seeded via the `admin_emails` table. Team leaders are registered by a
 3. After voting closes, open `/admin/spin/:projectId` to schedule and run the spin event
 4. Confirm & lock the result — project status becomes **Assigned**
 5. View all results at `/results`
+
+## Security
+
+### Database (RLS)
+
+All tables use **Row Level Security**. Access is denied by default; policies grant the minimum required permissions:
+
+- **projects / teams / spin_events / spin_logs:** public read where appropriate; writes admin-only via RLS
+- **votes:** leaders may insert/delete only their own team’s vote while a project is in `voting` status
+- **profiles:** users read their own row; only admins may update profiles; inserts only via the `handle_new_user` trigger
+- **admin_emails:** no frontend access — used only by `SECURITY DEFINER` triggers/functions
+- **spin_logs:** append-only (insert + select; no update or delete policies)
+
+Apply migration `20250614000006_security_hardening.sql` (via `supabase db push` or SQL Editor) for the latest policies, grants, and indexes.
+
+### Role assignment
+
+Roles are **never set from the frontend**. On first Google sign-in, the `handle_new_user` trigger assigns:
+
+- `admin` if the email exists in `admin_emails`
+- `leader` if the email exists in `teams.leader_email`
+- `viewer` otherwise (no elevated access)
+
+Admin routes re-fetch the profile from Supabase on each navigation — client-side state alone is not trusted.
+
+### Environment variables
+
+Only these are exposed to the browser (Vite `VITE_` prefix):
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+The **service_role** key must never appear in frontend code or Vercel env vars for this project.
+
+### What the anon key can do
+
+The anon key identifies the public Supabase client. It can only perform operations **allowed by RLS** for the `anon` or `authenticated` roles. It cannot bypass RLS or access `admin_emails`.
+
+### Auth rate limiting
+
+Supabase Auth applies built-in rate limiting on OAuth and password flows. No additional client configuration is required.
+
+### HTTP headers
+
+Production deployments on Vercel send security headers (CSP, `X-Frame-Options`, etc.) via `vercel.json`.
+
+### Reporting vulnerabilities
+
+Report security issues to **thesarupraneeth@gmail.com**. Do not open public GitHub issues for undisclosed vulnerabilities.
+
+### Further reading
+
+- [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security)
+- [Supabase Auth security](https://supabase.com/docs/guides/auth)
+
+## Known Security Notes
+
+Run `npm audit` periodically (`npm run audit`). As of the last audit, no HIGH or CRITICAL vulnerabilities were reported in production dependencies.
