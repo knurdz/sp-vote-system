@@ -74,13 +74,23 @@ Open [http://localhost:5173](http://localhost:5173).
 
 ## Deploy to Vercel
 
-1. Push the repo to GitHub
-2. Import the project in [Vercel](https://vercel.com)
-3. Set **Root Directory** to `projalloc`
-4. Add environment variables:
+**Important:** The app lives in the `projalloc/` folder. Production must deploy a branch that contains this directory (e.g. `dev` after merge, not an empty `main`).
+
+1. Push the repo to GitHub and merge `dev` into `main` (or set Vercel **Production Branch** to `dev` temporarily).
+2. Import the project in [Vercel](https://vercel.com).
+3. **Project Settings → General → Root Directory:** set to `projalloc` (required).
+4. **Framework Preset:** Vite (auto-detected when root is `projalloc`).
+5. **Build Command:** `npm run build` · **Output Directory:** `dist` (defaults are fine).
+6. Add environment variables:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
-5. Add your Vercel URL to Supabase Auth → URL Configuration → Redirect URLs
+   - `VITE_ADMIN_EMAIL` (your admin Gmail)
+7. Redeploy after saving settings.
+8. In Supabase → Authentication → URL Configuration:
+   - **Site URL:** `https://your-app.vercel.app`
+   - **Redirect URLs:** add `https://your-app.vercel.app/**` and keep `http://localhost:5173/**`
+
+`vercel.json` in this folder enables React Router SPA fallback so routes like `/admin` work on refresh.
 
 ## User Roles
 
