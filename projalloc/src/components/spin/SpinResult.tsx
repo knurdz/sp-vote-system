@@ -30,13 +30,10 @@ export function SpinResult({ open, winnerName, onConfirm, loading, error }: Spin
       <div className="spin-overlay-card relative z-10 max-w-sm">
         <div className="spin-overlay-accent" />
         <div className="px-6 py-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-accent/30 bg-accent-glow text-3xl">
-            🏆
-          </div>
           <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-accent">
             Spin complete
           </p>
-          <p className="mt-1 text-sm text-text-secondary">Winning team</p>
+          <p className="mt-1 text-sm text-text-secondary">Selected team</p>
           <p className="mt-2 text-3xl font-bold text-text-primary">{winnerName}</p>
           <p className="mt-3 text-xs text-text-muted">
             This result is final. Confirm to assign the team.

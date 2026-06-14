@@ -28,7 +28,7 @@ export function VoteButton({ projectId, votingOpen }: VoteButtonProps) {
   if (assignedElsewhere && assignment) {
     return (
       <Alert
-        message={`Your team has been assigned to "${assignment.projectTitle}". You cannot vote on other projects.`}
+        message={`Your team is already on "${assignment.projectTitle}". You can only vote on one project.`}
       />
     )
   }
@@ -39,22 +39,34 @@ export function VoteButton({ projectId, votingOpen }: VoteButtonProps) {
     <div className="space-y-3">
       {error && <Alert message={error} />}
       {hasVoted ? (
-        <Button
-          variant="secondary"
-          size="lg"
-          disabled={actionLoading}
-          onClick={() => void withdraw()}
-        >
-          {actionLoading ? 'Withdrawing…' : 'Withdraw Vote'}
-        </Button>
+        <>
+          <p className="text-sm text-text-secondary">
+            Your team picked this one. Changed your mind?
+          </p>
+          <Button
+            variant="secondary"
+            size="lg"
+            className="w-full"
+            disabled={actionLoading}
+            onClick={() => void withdraw()}
+          >
+            {actionLoading ? 'Removing vote…' : 'Undo our vote'}
+          </Button>
+        </>
       ) : (
-        <Button
-          size="lg"
-          disabled={actionLoading}
-          onClick={() => void vote()}
-        >
-          {actionLoading ? 'Voting…' : 'Vote for this Project'}
-        </Button>
+        <>
+          <p className="text-sm text-text-secondary">
+            Want this project? Lock in your team&apos;s vote before the deadline.
+          </p>
+          <Button
+            size="lg"
+            className="w-full"
+            disabled={actionLoading}
+            onClick={() => void vote()}
+          >
+            {actionLoading ? 'Submitting…' : 'Vote for this one'}
+          </Button>
+        </>
       )}
     </div>
   )

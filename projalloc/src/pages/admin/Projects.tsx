@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import { Badge } from '@/components/ui/Badge'
@@ -11,12 +11,13 @@ import { SpinModal } from '@/components/spin/SpinModal'
 import { useProjects } from '@/hooks/useProjects'
 import { projectHasVotes } from '@/hooks/useTeams'
 import { supabase } from '@/lib/supabase'
-import { STATUS_LABELS } from '@/lib/utils'
+import { sortProjectsByStatus, STATUS_LABELS } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import type { Project } from '@/types'
 
 export function AdminProjects() {
   const { projects, loading, error, refetch } = useProjects()
+  const sortedProjects = useMemo(() => sortProjectsByStatus(projects), [projects])
   const { profile } = useAuth()
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
@@ -97,6 +98,13 @@ export function AdminProjects() {
         </div>
       ) : error ? (
         <Alert message={error} />
+      ) : sortedProjects.length === 0 ? (
+        <div className="rounded-card border border-border bg-bg-surface py-16 text-center">
+          <p className="font-medium text-text-primary">No projects yet</p>
+          <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">
+            Click Add Project to create the first project for team allocation.
+          </p>
+        </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-border">
           <table className="w-full text-left text-sm">
@@ -109,7 +117,7 @@ export function AdminProjects() {
               </tr>
             </thead>
             <tbody>
-              {projects.map((project) => (
+              {sortedProjects.map((project) => (
                 <tr key={project.id} className="border-b border-border bg-bg-base">
                   <td className="px-4 py-3">{project.title}</td>
                   <td className="px-4 py-3 text-text-secondary">{project.company}</td>
@@ -118,17 +126,19 @@ export function AdminProjects() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => {
-                          setEditing(project)
-                          setModalOpen(true)
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      {(project.status === 'closed' || project.status === 'assigned') && (
+                      {project.status !== 'assigned' && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            setEditing(project)
+                            setModalOpen(true)
+                          }}
+                        >
+                          Edit
+                        </Button>
+                      )}
+                      {project.status === 'closed' && (
                         <Button
                           size="sm"
                           variant="secondary"

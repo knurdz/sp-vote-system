@@ -2,6 +2,7 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { Spinner } from '@/components/ui/Spinner'
 import { Footer } from '@/components/layout/Footer'
+import { PageShell } from '@/components/layout/PageShell'
 import type { Role } from '@/types'
 
 interface ProtectedRouteProps {
@@ -14,12 +15,12 @@ export function ProtectedRoute({ children, requiredRole = 'admin' }: ProtectedRo
 
   if (loading) {
     return (
-      <div className="page-glow flex min-h-screen flex-col bg-bg-base">
+      <PageShell>
         <div className="flex flex-1 items-center justify-center">
           <Spinner />
         </div>
         <Footer />
-      </div>
+      </PageShell>
     )
   }
 

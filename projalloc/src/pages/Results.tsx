@@ -11,7 +11,7 @@ export function Results() {
     <PageWrapper>
       <div className="mb-8">
         <h1 className="mb-2 text-3xl font-bold text-text-primary">Results Archive</h1>
-        <p className="text-text-secondary">Completed spin events and winning teams</p>
+        <p className="text-text-secondary">Completed spin events and selected teams</p>
       </div>
 
       {loading && (
@@ -23,8 +23,11 @@ export function Results() {
       {error && <Alert message={error} />}
 
       {!loading && !error && logs.length === 0 && (
-        <div className="panel py-16 text-center text-text-secondary">
-          No results yet.
+        <div className="panel py-16 text-center">
+          <p className="font-medium text-text-primary">No results yet</p>
+          <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">
+            Spin results are recorded after an admin locks a spin event.
+          </p>
         </div>
       )}
 
@@ -41,11 +44,9 @@ export function Results() {
               </span>
             </div>
 
-            <div className="mb-4 flex items-center gap-2">
-              <span className="text-2xl">🏆</span>
-              <span className="text-lg font-medium text-accent-hover">
-                {log.winning_team_name}
-              </span>
+            <div className="mb-4">
+              <p className="text-sm text-text-secondary">Selected team</p>
+              <p className="text-lg font-medium text-accent-hover">{log.winning_team_name}</p>
             </div>
 
             <div>

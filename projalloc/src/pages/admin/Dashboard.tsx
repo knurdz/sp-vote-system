@@ -10,7 +10,7 @@ export function Dashboard() {
 
   return (
     <PageWrapper>
-      <div className="mb-8">
+      <div className="page-header">
         <h1 className="mb-2 text-3xl font-bold text-text-primary">Admin Dashboard</h1>
         <p className="text-text-secondary">Manage projects, teams, and spin events</p>
       </div>
@@ -26,7 +26,7 @@ export function Dashboard() {
             <p className="text-3xl font-bold text-text-primary">{stats.totalProjects}</p>
           </Card>
           <Card>
-            <p className="text-sm text-text-secondary">Open Votes</p>
+            <p className="text-sm text-text-secondary">Open for votes</p>
             <p className="text-3xl font-bold text-green">{stats.openVotes}</p>
           </Card>
           <Card>
@@ -40,12 +40,14 @@ export function Dashboard() {
         </div>
       )}
 
-      <div className="flex gap-4">
+      <div className="flex flex-wrap gap-4">
         <Link to="/admin/projects">
-          <Button>Manage Projects</Button>
+          <Button size="lg">Manage Projects</Button>
         </Link>
         <Link to="/admin/teams">
-          <Button variant="secondary">Manage Teams</Button>
+          <Button size="lg" variant="secondary">
+            Manage Teams
+          </Button>
         </Link>
       </div>
     </PageWrapper>

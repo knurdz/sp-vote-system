@@ -7,19 +7,19 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants = {
   primary:
-    'bg-accent text-black border border-accent hover:bg-accent-hover hover:shadow-accent-glow active:scale-[0.98]',
+    'bg-accent font-semibold text-black border border-accent shadow-[0_0_20px_rgba(0,201,120,0.35)] hover:bg-accent-hover hover:shadow-[0_0_28px_rgba(0,201,120,0.5)] hover:-translate-y-px active:translate-y-0 active:scale-[0.98]',
   secondary:
-    'bg-transparent text-accent border border-accent/60 hover:border-accent hover:bg-accent-glow',
+    'bg-accent/10 font-medium text-accent border border-accent/70 hover:border-accent hover:bg-accent/15 active:scale-[0.98]',
   ghost:
-    'bg-transparent text-text-secondary border border-border hover:border-accent/60 hover:text-text-primary',
+    'bg-transparent text-text-secondary border border-border hover:border-accent/60 hover:bg-bg-elevated hover:text-text-primary active:scale-[0.98]',
   danger:
-    'bg-transparent text-red border border-red/40 hover:bg-red/10',
+    'bg-red/10 font-medium text-red border border-red/50 hover:bg-red/15 active:scale-[0.98]',
 }
 
 const sizes = {
-  sm: 'px-3 py-1.5 text-[13px]',
-  md: 'px-4 py-2 text-[14px]',
-  lg: 'px-6 py-3 text-base font-semibold',
+  sm: 'min-h-9 px-3 py-1.5 text-[13px]',
+  md: 'min-h-11 px-5 py-2.5 text-[14px]',
+  lg: 'min-h-12 px-6 py-3 text-base font-semibold',
 }
 
 export function Button({
@@ -33,7 +33,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex cursor-pointer select-none items-center justify-center rounded-btn font-medium transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex cursor-pointer select-none items-center justify-center rounded-btn transition-all duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:hover:translate-y-0',
         variants[variant],
         sizes[size],
         className,

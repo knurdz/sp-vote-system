@@ -381,10 +381,10 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
                 <div className="flex flex-1 flex-col items-center justify-center">
                   {isLocked && spinLog ? (
                     <div className="w-full rounded-card border border-accent/25 bg-accent-glow px-6 py-10 text-center">
-                      <div className="mb-3 text-5xl">🏆</div>
                       <p className="text-xs font-medium uppercase tracking-wider text-text-secondary">
-                        Winner locked
+                        Selection locked
                       </p>
+                      <p className="mt-1 text-sm text-text-secondary">Selected team</p>
                       <p className="mt-2 text-2xl font-bold text-accent-hover">
                         {spinLog.winning_team_name}
                       </p>

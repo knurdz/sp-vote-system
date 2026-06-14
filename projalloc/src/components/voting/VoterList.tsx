@@ -17,7 +17,10 @@ export function VoterList({ projectId, visible }: VoterListProps) {
 
   if (votes.length === 0) {
     return (
-      <p className="text-sm text-text-secondary">No teams voted for this project.</p>
+      <div className="text-sm text-text-secondary">
+        <p>No votes yet on this one.</p>
+        <p className="mt-1 text-text-muted">Teams show up here after someone votes.</p>
+      </div>
     )
   }
 
