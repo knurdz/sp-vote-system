@@ -10,7 +10,7 @@ export interface ParseTeamsCsvResult {
 }
 
 const NAME_HEADERS = new Set(['name', 'team', 'team_name', 'teamname'])
-const EMAIL_HEADERS = new Set(['leader_email', 'email', 'leader', 'leader_gmail', 'gmail'])
+const EMAIL_HEADERS = new Set(['leader_email', 'email', 'account_email', 'leader', 'leader_gmail', 'gmail'])
 
 function normalizeHeader(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, '_')
@@ -84,25 +84,25 @@ export function parseTeamsCsv(content: string): ParseTeamsCsvResult {
     const cells = parseCsvLine(line)
 
     if (cells.length < 2) {
-      errors.push(`Line ${lineNumber}: expected team name and leader email.`)
+      errors.push(`Line ${lineNumber}: expected team name and account email.`)
       return
     }
 
     const name = cells[nameIndex]?.trim()
     const leaderEmail = cells[emailIndex]?.trim().toLowerCase()
 
-    if (!name) {
-      errors.push(`Line ${lineNumber}: team name is required.`)
+    if (!name || name.length < 2 || name.length > 60) {
+      errors.push(`Line ${lineNumber}: team name must be 2–60 characters.`)
       return
     }
 
     if (!leaderEmail || !isValidEmail(leaderEmail)) {
-      errors.push(`Line ${lineNumber}: invalid leader email "${cells[emailIndex] ?? ''}".`)
+      errors.push(`Line ${lineNumber}: invalid account email "${cells[emailIndex] ?? ''}".`)
       return
     }
 
     if (seenEmails.has(leaderEmail)) {
-      errors.push(`Line ${lineNumber}: duplicate leader email "${leaderEmail}".`)
+      errors.push(`Line ${lineNumber}: duplicate account email "${leaderEmail}".`)
       return
     }
 
@@ -113,6 +113,6 @@ export function parseTeamsCsv(content: string): ParseTeamsCsvResult {
   return { rows, errors }
 }
 
-export const TEAMS_CSV_TEMPLATE = `team_name,leader_email
-Example Team,leader@gmail.com
+export const TEAMS_CSV_TEMPLATE = `team_name,account_email
+Example Team,team@example.com
 `

@@ -40,7 +40,7 @@ export function FilterTabs({
             aria-selected={active}
             onClick={() => onChange(tab.id)}
             className={cn(
-              'inline-flex shrink-0 touch-target items-center gap-ds-2 rounded-lg px-ds-4 py-ds-2 text-sm font-medium transition-all duration-150',
+              'inline-flex shrink-0 cursor-pointer select-none touch-target items-center gap-ds-2 rounded-lg px-ds-4 py-ds-2 text-sm font-medium transition-all duration-150',
               active
                 ? 'bg-accent text-black shadow-accent-glow'
                 : 'text-text-secondary hover:text-text-primary',

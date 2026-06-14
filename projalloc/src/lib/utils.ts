@@ -46,6 +46,18 @@ export function truncate(text: string, max: number) {
   return `${text.slice(0, max - 1)}…`
 }
 
-export function getInitials(email: string) {
-  return email.slice(0, 2).toUpperCase()
+export function getInitials(text: string) {
+  const trimmed = text.trim()
+  if (!trimmed) return '?'
+
+  if (trimmed.includes('@')) {
+    return trimmed.slice(0, 2).toUpperCase()
+  }
+
+  const parts = trimmed.split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+  }
+
+  return trimmed.slice(0, 2).toUpperCase()
 }

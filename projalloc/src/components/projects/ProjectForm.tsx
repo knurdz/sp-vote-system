@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { addDays, setHours, setMinutes } from 'date-fns'
 import { Button } from '@/components/ui/Button'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
+import { useSubmitLock } from '@/hooks/useSubmitLock'
 import { fromDatetimeLocalValue, toDatetimeLocalValue } from '@/lib/utils'
+import { formatZodErrors, projectSchema } from '@/lib/validations'
 import type { Project, ProjectStatus } from '@/types'
 
 export interface ProjectFormData {
@@ -39,6 +41,7 @@ export function ProjectForm({ initial, onSubmit, onCancel }: ProjectFormProps) {
   const [status, setStatus] = useState<ProjectStatus>(initial?.status ?? 'upcoming')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { submitLocked, runLocked } = useSubmitLock()
 
   const addTag = () => {
     const tag = tagInput.trim()
@@ -50,23 +53,33 @@ export function ProjectForm({ initial, onSubmit, onCancel }: ProjectFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setError(null)
-    try {
-      await onSubmit({
-        title,
-        company,
-        description,
-        tech_stack: techStack,
-        team_size: teamSize,
-        voting_deadline: fromDatetimeLocalValue(deadline),
-        status,
-      })
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save project')
-    } finally {
-      setLoading(false)
-    }
+    await runLocked(async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const sanitizedTags = techStack.map((tag) => tag.trim()).filter(Boolean)
+        const parsed = projectSchema.safeParse({
+          title,
+          company,
+          description,
+          tech_stack: sanitizedTags,
+          team_size: teamSize,
+          voting_deadline: fromDatetimeLocalValue(deadline),
+          status,
+        })
+
+        if (!parsed.success) {
+          setError(formatZodErrors(parsed.error))
+          return
+        }
+
+        await onSubmit(parsed.data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to save project')
+      } finally {
+        setLoading(false)
+      }
+    })
   }
 
   const inputClass = 'input-field input-field-focus'
@@ -175,7 +188,7 @@ export function ProjectForm({ initial, onSubmit, onCancel }: ProjectFormProps) {
         <Button type="button" variant="secondary" onClick={onCancel} className="w-full sm:w-auto">
           Cancel
         </Button>
-        <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+        <Button type="submit" disabled={loading || submitLocked} className="w-full sm:w-auto">
           {loading ? 'Saving…' : 'Save Project'}
         </Button>
       </div>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react'
+import type { AuthChangeEvent } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/authStore'
 import type { Profile } from '@/types'
@@ -11,10 +12,14 @@ async function fetchProfile(userId: string): Promise<Profile | null> {
     .single()
 
   if (error) {
-    console.error('Failed to fetch profile:', error.message)
     return null
   }
   return data as Profile
+}
+
+async function forceSignOut(reset: () => void) {
+  reset()
+  await supabase.auth.signOut()
 }
 
 export function useAuth() {
@@ -25,32 +30,49 @@ export function useAuth() {
     let mounted = true
 
     async function init() {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
       if (!mounted) return
 
       if (session?.user) {
         setUser(session.user)
         const p = await fetchProfile(session.user.id)
-        if (mounted) setProfile(p)
+        if (!mounted) return
+        if (!p) {
+          await forceSignOut(reset)
+          return
+        }
+        setProfile(p)
       }
       if (mounted) setLoading(false)
     }
 
     void init()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (!mounted) return
-        if (session?.user) {
-          setUser(session.user)
-          const p = await fetchProfile(session.user.id)
-          if (mounted) setProfile(p)
-        } else {
-          reset()
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
+      if (!mounted) return
+
+      if (event === 'SIGNED_OUT' || !session?.user) {
+        reset()
         if (mounted) setLoading(false)
-      },
-    )
+        return
+      }
+
+      setUser(session.user)
+      const p = await fetchProfile(session.user.id)
+      if (!mounted) return
+
+      if (!p) {
+        await forceSignOut(reset)
+        return
+      }
+
+      setProfile(p)
+      if (mounted) setLoading(false)
+    })
 
     return () => {
       mounted = false
@@ -75,5 +97,16 @@ export function useAuth() {
     reset()
   }, [reset])
 
-  return { user, profile, role, loading, signInWithGoogle, signOut }
+  const refreshProfile = useCallback(async (): Promise<Profile | null> => {
+    if (!user) return null
+    const p = await fetchProfile(user.id)
+    if (!p) {
+      await forceSignOut(reset)
+      return null
+    }
+    setProfile(p)
+    return p
+  }, [user, reset, setProfile])
+
+  return { user, profile, role, loading, signInWithGoogle, signOut, refreshProfile }
 }
