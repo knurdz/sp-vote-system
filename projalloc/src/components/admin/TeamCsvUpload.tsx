@@ -129,7 +129,7 @@ export function TeamCsvUpload({ teams, onComplete }: TeamCsvUploadProps) {
         <div>
           <h2 className="text-lg font-semibold text-text-primary">Import Teams from CSV</h2>
           <p className="mt-1 max-w-2xl text-sm text-text-secondary">
-            Upload a CSV with team name and leader email. Existing teams are matched by leader
+            Upload a CSV with team name and account email. Existing teams are matched by account
             email and updated; new emails are added as teams.
           </p>
         </div>
@@ -147,7 +147,7 @@ export function TeamCsvUpload({ teams, onComplete }: TeamCsvUploadProps) {
           className="block w-full text-sm text-text-secondary file:mr-4 file:rounded-btn file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-medium file:text-black hover:file:bg-accent-hover"
         />
         <p className="mt-2 text-[12px] text-text-muted">
-          Expected columns: <span className="font-mono">team_name, leader_email</span>
+          Expected columns: <span className="font-mono">team_name, account_email</span>
         </p>
       </div>
 
@@ -181,7 +181,6 @@ export function TeamCsvUpload({ teams, onComplete }: TeamCsvUploadProps) {
               <thead className="border-b border-border bg-bg-elevated">
                 <tr>
                   <th className="px-4 py-2 font-medium text-text-secondary">Team Name</th>
-                  <th className="px-4 py-2 font-medium text-text-secondary">Leader Email</th>
                   <th className="px-4 py-2 font-medium text-text-secondary">Action</th>
                 </tr>
               </thead>
@@ -193,7 +192,6 @@ export function TeamCsvUpload({ teams, onComplete }: TeamCsvUploadProps) {
                   return (
                     <tr key={`${row.line}-${row.leader_email}`} className="border-b border-border">
                       <td className="px-4 py-2">{row.name}</td>
-                      <td className="px-4 py-2 font-mono text-text-secondary">{row.leader_email}</td>
                       <td className="px-4 py-2 text-text-secondary">
                         {exists ? 'Update name' : 'Create team'}
                       </td>
