@@ -25,10 +25,10 @@ export function fromDatetimeLocalValue(value: string) {
 }
 
 export const STATUS_LABELS: Record<ProjectStatus, string> = {
-  upcoming: 'Upcoming',
-  voting: 'Voting Open',
-  closed: 'Closed',
-  assigned: 'Assigned',
+  upcoming: 'Coming soon',
+  voting: 'Open for votes',
+  closed: 'Voting closed',
+  assigned: 'Team picked',
 }
 
 export function getEffectiveStatus(project: Project): ProjectStatus {
@@ -39,6 +39,21 @@ export function getEffectiveStatus(project: Project): ProjectStatus {
     return 'closed'
   }
   return project.status
+}
+
+const STATUS_SORT_ORDER: Record<ProjectStatus, number> = {
+  voting: 0,
+  upcoming: 1,
+  closed: 2,
+  assigned: 3,
+}
+
+export function sortProjectsByStatus(projects: Project[]): Project[] {
+  return [...projects].sort((a, b) => {
+    const byStatus = STATUS_SORT_ORDER[a.status] - STATUS_SORT_ORDER[b.status]
+    if (byStatus !== 0) return byStatus
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  })
 }
 
 export function truncate(text: string, max: number) {

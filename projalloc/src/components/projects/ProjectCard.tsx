@@ -2,11 +2,13 @@ import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Countdown } from '@/components/ui/Countdown'
 import { STATUS_LABELS, cn, truncate } from '@/lib/utils'
-import type { Project, ProjectStatus } from '@/types'
+import type { AssignedTeamInfo, Project, ProjectStatus } from '@/types'
 
 interface ProjectCardProps {
   project: Project
   featured?: boolean
+  assignedTeam?: AssignedTeamInfo
+  showAdminEmail?: boolean
 }
 
 const STATUS_STYLES: Record<
@@ -37,8 +39,14 @@ const STATUS_STYLES: Record<
   },
 }
 
-export function ProjectCard({ project, featured = false }: ProjectCardProps) {
+export function ProjectCard({
+  project,
+  featured = false,
+  assignedTeam,
+  showAdminEmail = false,
+}: ProjectCardProps) {
   const isVoting = project.status === 'voting'
+  const isAssigned = project.status === 'assigned'
   const styles = STATUS_STYLES[project.status]
 
   return (
@@ -98,23 +106,37 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps) {
 
           <div className="mt-auto pt-4 sm:pt-5">
             <div className="flex flex-col gap-2 rounded-xl border border-border/80 bg-bg-elevated/60 px-3.5 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-              <div className="flex items-center gap-2 text-[12px] text-text-secondary">
-                <svg
-                  className="h-3.5 w-3.5 shrink-0 text-text-muted"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  aria-hidden
-                >
-                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-                </svg>
-                <span>
-                  Team of <span className="font-medium text-text-primary">{project.team_size}</span>
-                </span>
-              </div>
+              {isAssigned && assignedTeam ? (
+                <div className="text-[12px] text-text-secondary">
+                  <span>Selected team: </span>
+                  <span className="font-medium text-text-primary">{assignedTeam.name}</span>
+                  {showAdminEmail && assignedTeam.leaderEmail && (
+                    <p className="mt-0.5 font-mono text-[11px] text-text-muted">
+                      {assignedTeam.leaderEmail}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-[12px] text-text-secondary">
+                  <svg
+                    className="h-3.5 w-3.5 shrink-0 text-text-muted"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    aria-hidden
+                  >
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                  </svg>
+                  <span>
+                    Team of{' '}
+                    <span className="font-medium text-text-primary">{project.team_size}</span>
+                    {' members'}
+                  </span>
+                </div>
+              )}
 
               {isVoting && (
                 <Countdown

@@ -2,19 +2,17 @@ import { useMemo } from 'react'
 import { ProjectCard } from './ProjectCard'
 import { Spinner } from '@/components/ui/Spinner'
 import { Alert } from '@/components/ui/Alert'
-import type { Project, ProjectStatus } from '@/types'
+import { sortProjectsByStatus } from '@/lib/utils'
+import type { AssignedTeamInfo, Project } from '@/types'
 
 interface ProjectListProps {
   projects: Project[]
   loading: boolean
   error: string | null
-}
-
-const STATUS_ORDER: Record<ProjectStatus, number> = {
-  voting: 0,
-  upcoming: 1,
-  closed: 2,
-  assigned: 3,
+  emptyMessage?: string
+  emptyDescription?: string
+  assignedTeams?: Record<string, AssignedTeamInfo>
+  showAdminEmail?: boolean
 }
 
 function EmptyIllustration() {
@@ -33,14 +31,16 @@ function EmptyIllustration() {
   )
 }
 
-export function ProjectList({ projects, loading, error }: ProjectListProps) {
-  const sorted = useMemo(
-    () =>
-      [...projects].sort(
-        (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status],
-      ),
-    [projects],
-  )
+export function ProjectList({
+  projects,
+  loading,
+  error,
+  emptyMessage = 'No projects here yet',
+  emptyDescription = 'Projects will appear here once an admin adds them.',
+  assignedTeams = {},
+  showAdminEmail = false,
+}: ProjectListProps) {
+  const sorted = useMemo(() => sortProjectsByStatus(projects), [projects])
 
   if (loading) {
     return (
@@ -58,7 +58,8 @@ export function ProjectList({ projects, loading, error }: ProjectListProps) {
     return (
       <div className="rounded-card border border-border bg-bg-surface py-20 text-center">
         <EmptyIllustration />
-        <p className="text-text-secondary">No projects here yet</p>
+        <p className="font-medium text-text-primary">{emptyMessage}</p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">{emptyDescription}</p>
       </div>
     )
   }
@@ -70,6 +71,8 @@ export function ProjectList({ projects, loading, error }: ProjectListProps) {
           key={project.id}
           project={project}
           featured={project.status === 'voting'}
+          assignedTeam={assignedTeams[project.id]}
+          showAdminEmail={showAdminEmail}
         />
       ))}
     </div>

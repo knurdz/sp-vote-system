@@ -2,7 +2,8 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
-:root {
+:root,
+[data-theme='dark'] {
   --bg-base: #000000;
   --bg-surface: #0A0A0A;
   --bg-elevated: #111111;
@@ -11,16 +12,47 @@
   --accent-hover: #00E088;
   --accent-glow: #00C97822;
   --text-primary: #F5F5F5;
-  --text-secondary: #888888;
-  --text-muted: #555555;
+  --text-secondary: #B3B3B3;
+  --text-muted: #757575;
   --green: #00C978;
   --yellow: #FFD600;
-  --gray: #555555;
+  --gray: #757575;
   --red: #FF4444;
   --status-voting: #00C978;
   --status-upcoming: #F5A623;
   --status-closed: #9CA3AF;
   --status-assigned: #4DA3FF;
+  --page-glow-color: #00C97812;
+  --side-glow-green: rgba(0, 201, 120, 0.14);
+  --side-glow-blue: rgba(77, 163, 255, 0.1);
+  --side-glow-fade: rgba(0, 201, 120, 0.04);
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --bg-base: #F4F6F8;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #EEF1F4;
+  --border: #D8DEE4;
+  --accent: #00A862;
+  --accent-hover: #00C978;
+  --accent-glow: #00C97828;
+  --text-primary: #0F1419;
+  --text-secondary: #4B5563;
+  --text-muted: #6B7280;
+  --green: #00A862;
+  --yellow: #D4A006;
+  --gray: #6B7280;
+  --red: #DC2626;
+  --status-voting: #00A862;
+  --status-upcoming: #D97706;
+  --status-closed: #6B7280;
+  --status-assigned: #2563EB;
+  --page-glow-color: #00C97820;
+  --side-glow-green: rgba(0, 168, 98, 0.12);
+  --side-glow-blue: rgba(37, 99, 235, 0.1);
+  --side-glow-fade: rgba(0, 168, 98, 0.05);
+  color-scheme: light;
 }
 
 @theme {
@@ -54,7 +86,21 @@ body {
 }
 
 .page-glow {
-  background-image: radial-gradient(ellipse 80% 400px at 50% -100px, #00C97812, transparent);
+  background-image: radial-gradient(ellipse 80% 400px at 50% -100px, var(--page-glow-color), transparent);
+}
+
+.board-side-glow {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 0;
+  width: min(480px, 38vw);
+  height: 100vh;
+  background:
+    radial-gradient(ellipse 90% 55% at 100% 15%, var(--side-glow-green), transparent 68%),
+    radial-gradient(ellipse 70% 45% at 100% 85%, var(--side-glow-blue), transparent 62%),
+    linear-gradient(270deg, var(--side-glow-fade) 0%, transparent 55%);
 }
 
 .navbar-gradient-line {
@@ -94,6 +140,20 @@ body {
   background-color: var(--bg-surface);
 }
 
+@utility page-header {
+  margin-bottom: 2rem;
+}
+
+@utility section-gap {
+  margin-bottom: 2rem;
+}
+
+@utility stack-md {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 @utility input-field {
   width: 100%;
   border-radius: 10px;
@@ -103,7 +163,7 @@ body {
   font-size: 14px;
   color: var(--text-primary);
   outline: none;
-  color-scheme: dark;
+  color-scheme: inherit;
 }
 
 @utility input-field-focus {

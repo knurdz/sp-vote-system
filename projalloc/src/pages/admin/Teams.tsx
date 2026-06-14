@@ -114,6 +114,13 @@ export function AdminTeams() {
         </div>
       ) : error ? (
         <Alert message={error} />
+      ) : teams.length === 0 ? (
+        <div className="rounded-card border border-border bg-bg-surface py-16 text-center">
+          <p className="font-medium text-text-primary">No teams registered yet</p>
+          <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">
+            Add teams manually or upload a CSV with team names and leader account emails.
+          </p>
+        </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-border">
           <table className="w-full text-left text-sm">

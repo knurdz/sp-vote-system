@@ -23,7 +23,7 @@ function GitHubIcon() {
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-border bg-bg-surface">
+    <footer className="mt-auto shrink-0 border-t border-border bg-bg-surface">
       <div className="mx-auto grid max-w-page grid-cols-1 gap-8 px-4 py-8 sm:px-8 sm:py-10 md:grid-cols-3 md:gap-10">
         {/* Left — Powered by Knurdz */}
         <div>

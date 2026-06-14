@@ -38,13 +38,13 @@ export function ProjectDetail() {
 
   return (
     <PageWrapper>
-      <div className="mb-6">
+      <div className="section-gap">
         <Link to="/" className="text-sm text-text-secondary transition-colors hover:text-text-primary">
           ← Back to projects
         </Link>
       </div>
 
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="page-header flex items-start justify-between gap-4">
         <div>
           <h1 className="mb-2 text-3xl font-bold text-text-primary">{project.title}</h1>
           <p className="text-lg text-text-secondary">{project.company}</p>
@@ -75,7 +75,7 @@ export function ProjectDetail() {
 
           {votingClosed && (
             <section className="panel p-6">
-              <h2 className="mb-3 font-semibold text-text-primary">Teams that Voted</h2>
+              <h2 className="mb-3 font-semibold text-text-primary">Who voted</h2>
               <VoterList projectId={project.id} visible />
             </section>
           )}
@@ -87,17 +87,19 @@ export function ProjectDetail() {
             <dl className="space-y-3 text-sm">
               <div>
                 <dt className="text-text-secondary">Team Size</dt>
-                <dd className="font-medium text-text-primary">{project.team_size} members</dd>
+                <dd className="font-medium text-text-primary">
+                  Team of {project.team_size} members
+                </dd>
               </div>
               <div>
-                <dt className="text-text-secondary">Voting Deadline</dt>
+                <dt className="text-text-secondary">Vote by</dt>
                 <dd className="font-mono font-medium text-text-primary">
                   {formatDateTime(project.voting_deadline)}
                 </dd>
               </div>
               {project.status === 'voting' && (
                 <div>
-                  <dt className="text-text-secondary">Time Remaining</dt>
+                  <dt className="text-text-secondary">Closes in</dt>
                   <dd>
                     <Countdown deadline={project.voting_deadline} />
                   </dd>
@@ -134,9 +136,8 @@ export function ProjectDetail() {
 
           {winningTeam && (
             <section className="rounded-card border border-accent/30 bg-accent-glow p-6 text-center">
-              <div className="mb-2 text-4xl">🏆</div>
-              <p className="text-sm text-text-secondary">Winning Team</p>
-              <p className="text-xl font-bold text-accent-hover">{winningTeam}</p>
+              <p className="text-sm text-text-secondary">Selected team</p>
+              <p className="mt-2 text-xl font-bold text-accent-hover">{winningTeam}</p>
             </section>
           )}
 

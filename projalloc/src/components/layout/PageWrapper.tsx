@@ -1,5 +1,7 @@
 import { Navbar } from './Navbar'
 import { Footer } from './Footer'
+import { PageShell } from './PageShell'
+import { cn } from '@/lib/utils'
 
 interface PageWrapperProps {
   children: React.ReactNode
@@ -8,12 +10,17 @@ interface PageWrapperProps {
 
 export function PageWrapper({ children, className }: PageWrapperProps) {
   return (
-    <div className="page-glow flex min-h-screen flex-col bg-bg-base">
+    <PageShell>
       <Navbar />
-      <main className={`mx-auto w-full max-w-page flex-1 px-4 py-6 sm:px-8 sm:py-8 ${className ?? ''}`}>
+      <main
+        className={cn(
+          'mx-auto flex w-full max-w-page flex-1 flex-col px-4 py-8 sm:px-8',
+          className,
+        )}
+      >
         {children}
       </main>
       <Footer />
-    </div>
+    </PageShell>
   )
 }

@@ -171,8 +171,9 @@ export function SpinWheel({
 
   if (candidates.length === 0) {
     return (
-      <div className="spin-wheel-empty" style={{ width: size, height: size }}>
+      <div className="spin-wheel-empty flex flex-col items-center justify-center gap-1" style={{ width: size, height: size }}>
         <span className="text-sm text-text-secondary">No teams on the wheel</span>
+        <span className="text-xs text-text-muted">Teams appear after leaders vote on this project.</span>
       </div>
     )
   }
