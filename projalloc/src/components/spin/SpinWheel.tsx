@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { truncate } from '@/lib/utils'
+import { Button } from '@/components/ui/Button'
 
 const SEGMENT_COLORS = [
   '#00C978',
+  '#00A862',
   '#4DA3FF',
-  '#F5A623',
+  '#3B82F6',
   '#A78BFA',
+  '#8B5CF6',
+  '#F59E0B',
   '#F472B6',
   '#22D3EE',
-  '#FB923C',
-  '#9CA3AF',
+  '#64748B',
 ]
 
 function segmentTextColor(hex: string) {
@@ -17,24 +20,34 @@ function segmentTextColor(hex: string) {
   const g = Number.parseInt(hex.slice(3, 5), 16)
   const b = Number.parseInt(hex.slice(5, 7), 16)
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance > 0.58 ? '#0A0A0A' : '#FFFFFF'
+  return luminance > 0.55 ? '#0A0A0A' : '#F5F5F5'
 }
 
 interface SpinWheelProps {
   candidates: { id: string; name: string }[]
   onSpinComplete: (winner: { id: string; name: string }) => void
   disabled?: boolean
+  size?: number
+  compact?: boolean
 }
 
-export function SpinWheel({ candidates, onSpinComplete, disabled }: SpinWheelProps) {
+export function SpinWheel({
+  candidates,
+  onSpinComplete,
+  disabled,
+  size = 560,
+  compact = false,
+}: SpinWheelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [spinning, setSpinning] = useState(false)
   const rotationRef = useRef(0)
   const animRef = useRef<number>(0)
 
-  const size = 560
   const center = size / 2
-  const radius = size / 2 - 20
+  const radius = size / 2 - size * 0.08
+  const hubRadius = size * 0.055
+  const fontSize = Math.max(11, Math.round(size * 0.032))
+  const pointer = Math.round(size * 0.045)
 
   const drawWheel = (rotation: number) => {
     const canvas = canvasRef.current
@@ -44,6 +57,14 @@ export function SpinWheel({ candidates, onSpinComplete, disabled }: SpinWheelPro
     if (!ctx) return
 
     ctx.clearRect(0, 0, size, size)
+
+    // Outer glow ring
+    ctx.beginPath()
+    ctx.arc(center, center, radius + size * 0.02, 0, 2 * Math.PI)
+    ctx.strokeStyle = 'rgba(0, 201, 120, 0.25)'
+    ctx.lineWidth = size * 0.012
+    ctx.stroke()
+
     const slice = (2 * Math.PI) / candidates.length
 
     candidates.forEach((team, i) => {
@@ -57,8 +78,8 @@ export function SpinWheel({ candidates, onSpinComplete, disabled }: SpinWheelPro
       ctx.closePath()
       ctx.fillStyle = fill
       ctx.fill()
-      ctx.strokeStyle = '#000000'
-      ctx.lineWidth = 2
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.35)'
+      ctx.lineWidth = Math.max(1.5, size / 240)
       ctx.stroke()
 
       ctx.save()
@@ -66,35 +87,48 @@ export function SpinWheel({ candidates, onSpinComplete, disabled }: SpinWheelPro
       ctx.rotate(start + slice / 2)
       ctx.textAlign = 'right'
       ctx.fillStyle = segmentTextColor(fill)
-      ctx.font = 'bold 16px Inter, sans-serif'
-      ctx.fillText(truncate(team.name, 18), radius - 16, 6)
+      ctx.font = `600 ${fontSize}px Inter, sans-serif`
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.4)'
+      ctx.shadowBlur = 3
+      ctx.fillText(truncate(team.name, 16), radius - size * 0.06, fontSize * 0.35)
+      ctx.shadowBlur = 0
       ctx.restore()
     })
 
-    for (let i = 0; i < 48; i++) {
-      const angle = rotation + (i / 48) * 2 * Math.PI
-      const inner = radius + 4
-      const outer = radius + 12
+    // Pegs
+    for (let i = 0; i < 36; i++) {
+      const angle = rotation + (i / 36) * 2 * Math.PI
+      const inner = radius + size * 0.008
+      const outer = radius + size * 0.028
       ctx.beginPath()
       ctx.moveTo(center + inner * Math.cos(angle), center + inner * Math.sin(angle))
       ctx.lineTo(center + outer * Math.cos(angle), center + outer * Math.sin(angle))
-      ctx.strokeStyle = '#1A1A1A'
-      ctx.lineWidth = i % 4 === 0 ? 2 : 1
+      ctx.strokeStyle = i % 3 === 0 ? '#1A1A1A' : '#2A2A2A'
+      ctx.lineWidth = i % 3 === 0 ? 2 : 1
       ctx.stroke()
     }
 
+    // Hub
+    const hubGrad = ctx.createRadialGradient(center, center, 0, center, center, hubRadius)
+    hubGrad.addColorStop(0, '#222222')
+    hubGrad.addColorStop(1, '#0A0A0A')
     ctx.beginPath()
-    ctx.arc(center, center, 24, 0, 2 * Math.PI)
-    ctx.fillStyle = '#0A0A0A'
+    ctx.arc(center, center, hubRadius, 0, 2 * Math.PI)
+    ctx.fillStyle = hubGrad
     ctx.fill()
     ctx.strokeStyle = '#00C978'
-    ctx.lineWidth = 3
+    ctx.lineWidth = Math.max(2.5, size / 160)
     ctx.stroke()
+
+    ctx.beginPath()
+    ctx.arc(center, center, hubRadius * 0.35, 0, 2 * Math.PI)
+    ctx.fillStyle = '#00C978'
+    ctx.fill()
   }
 
   useEffect(() => {
     drawWheel(rotationRef.current)
-  }, [candidates])
+  }, [candidates, size])
 
   const spin = () => {
     if (spinning || disabled || candidates.length === 0) return
@@ -103,7 +137,6 @@ export function SpinWheel({ candidates, onSpinComplete, disabled }: SpinWheelPro
     const winner = candidates[winnerIndex]
     const slice = (2 * Math.PI) / candidates.length
 
-    // Pointer at top ( -PI/2 ), land winner center under pointer
     const targetRotation =
       -Math.PI / 2 - (winnerIndex + 0.5) * slice + 2 * Math.PI * 6
 
@@ -138,32 +171,37 @@ export function SpinWheel({ candidates, onSpinComplete, disabled }: SpinWheelPro
 
   if (candidates.length === 0) {
     return (
-      <div className="flex h-[560px] w-[560px] items-center justify-center rounded-full border border-border text-text-secondary">
-        No candidates on the wheel
+      <div className="spin-wheel-empty" style={{ width: size, height: size }}>
+        <span className="text-sm text-text-secondary">No teams on the wheel</span>
       </div>
     )
   }
 
   return (
-    <div className="relative flex flex-col items-center">
-      <div
-        className="absolute top-0 z-10 h-0 w-0"
-        style={{
-          borderLeft: '14px solid transparent',
-          borderRight: '14px solid transparent',
-          borderTop: '28px solid #FFFFFF',
-          transform: 'translateY(-4px)',
-        }}
-      />
-      <canvas ref={canvasRef} width={size} height={size} className="rounded-full" />
-      <button
-        type="button"
-        onClick={spin}
+    <div className="flex flex-col items-center">
+      <div className="spin-wheel-stage" style={{ width: size, height: size }}>
+        <div
+          className="spin-wheel-pointer"
+          style={{
+            borderLeft: `${pointer}px solid transparent`,
+            borderRight: `${pointer}px solid transparent`,
+            borderTop: `${pointer * 2.2}px solid #00C978`,
+            marginBottom: `-${Math.round(pointer * 0.5)}px`,
+          }}
+        />
+        <div className="spin-wheel-frame">
+          <canvas ref={canvasRef} width={size} height={size} className="block rounded-full" />
+        </div>
+      </div>
+
+      <Button
+        size={compact ? 'md' : 'lg'}
         disabled={spinning || disabled}
-        className="mt-8 rounded-btn bg-accent px-12 py-4 text-2xl font-bold text-white transition-all duration-150 hover:bg-accent-hover hover:shadow-accent-glow disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
+        onClick={spin}
+        className={compact ? 'mt-4 min-w-[160px]' : 'mt-6 min-w-[200px]'}
       >
-        {spinning ? 'SPINNING…' : 'SPIN'}
-      </button>
+        {spinning ? 'Spinning…' : 'Spin the Wheel'}
+      </Button>
     </div>
   )
 }
