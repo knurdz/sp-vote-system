@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Spinner } from '@/components/ui/Spinner'
 import { Alert } from '@/components/ui/Alert'
+import { TeamCsvUpload } from '@/components/admin/TeamCsvUpload'
 import { useTeams, teamHasVotes } from '@/hooks/useTeams'
 import { supabase } from '@/lib/supabase'
 import { formatDateTime } from '@/lib/utils'
@@ -77,7 +78,7 @@ export function AdminTeams() {
 
   return (
     <PageWrapper>
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link to="/admin" className="text-sm text-text-secondary hover:text-text-primary">
             ← Dashboard
@@ -86,6 +87,8 @@ export function AdminTeams() {
         </div>
         <Button onClick={openCreate}>Add Team</Button>
       </div>
+
+      <TeamCsvUpload teams={teams} onComplete={refetch} />
 
       {deleteError && (
         <div className="mb-4">
