@@ -48,6 +48,10 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
+function isGmailAddress(email: string) {
+  return email.endsWith('@gmail.com')
+}
+
 export function parseTeamsCsv(content: string): ParseTeamsCsvResult {
   const errors: string[] = []
   const rows: ParsedTeamRow[] = []
@@ -91,13 +95,18 @@ export function parseTeamsCsv(content: string): ParseTeamsCsvResult {
     const name = cells[nameIndex]?.trim()
     const leaderEmail = cells[emailIndex]?.trim().toLowerCase()
 
-    if (!name) {
-      errors.push(`Line ${lineNumber}: team name is required.`)
+    if (!name || name.length < 2 || name.length > 60) {
+      errors.push(`Line ${lineNumber}: team name must be 2–60 characters.`)
       return
     }
 
     if (!leaderEmail || !isValidEmail(leaderEmail)) {
       errors.push(`Line ${lineNumber}: invalid leader email "${cells[emailIndex] ?? ''}".`)
+      return
+    }
+
+    if (!isGmailAddress(leaderEmail)) {
+      errors.push(`Line ${lineNumber}: leader email must be @gmail.com.`)
       return
     }
 

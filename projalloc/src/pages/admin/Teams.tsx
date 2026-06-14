@@ -7,8 +7,10 @@ import { Spinner } from '@/components/ui/Spinner'
 import { Alert } from '@/components/ui/Alert'
 import { TeamCsvUpload } from '@/components/admin/TeamCsvUpload'
 import { useTeams, teamHasVotes } from '@/hooks/useTeams'
+import { useSubmitLock } from '@/hooks/useSubmitLock'
 import { supabase } from '@/lib/supabase'
 import { formatDateTime } from '@/lib/utils'
+import { formatZodErrors, teamSchema } from '@/lib/validations'
 import type { Team } from '@/types'
 
 export function AdminTeams() {
@@ -20,6 +22,7 @@ export function AdminTeams() {
   const [formError, setFormError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const { submitLocked, runLocked } = useSubmitLock()
 
   const openCreate = () => {
     setEditing(null)
@@ -38,23 +41,32 @@ export function AdminTeams() {
   }
 
   const handleSave = async () => {
-    setSaving(true)
-    setFormError(null)
+    await runLocked(async () => {
+      setSaving(true)
+      setFormError(null)
 
-    const payload = { name, leader_email: leaderEmail }
+      const parsed = teamSchema.safeParse({ name, leader_email: leaderEmail })
+      if (!parsed.success) {
+        setFormError(formatZodErrors(parsed.error))
+        setSaving(false)
+        return
+      }
 
-    const { error: err } = editing
-      ? await supabase.from('teams').update(payload).eq('id', editing.id)
-      : await supabase.from('teams').insert(payload)
+      const payload = parsed.data
 
-    setSaving(false)
-    if (err) {
-      setFormError(err.message)
-      return
-    }
+      const { error: err } = editing
+        ? await supabase.from('teams').update(payload).eq('id', editing.id)
+        : await supabase.from('teams').insert(payload)
 
-    setModalOpen(false)
-    await refetch()
+      setSaving(false)
+      if (err) {
+        setFormError(err.message)
+        return
+      }
+
+      setModalOpen(false)
+      await refetch()
+    })
   }
 
   const handleDelete = async (team: Team) => {
@@ -151,7 +163,7 @@ export function AdminTeams() {
             <Button variant="secondary" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => void handleSave()} disabled={saving}>
+            <Button onClick={() => void handleSave()} disabled={saving || submitLocked}>
               {saving ? 'Saving…' : 'Save'}
             </Button>
           </>
