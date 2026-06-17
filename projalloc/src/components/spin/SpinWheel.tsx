@@ -87,7 +87,7 @@ export function SpinWheel({
       ctx.rotate(start + slice / 2)
       ctx.textAlign = 'right'
       ctx.fillStyle = segmentTextColor(fill)
-      ctx.font = `600 ${fontSize}px Inter, sans-serif`
+      ctx.font = `600 ${fontSize}px Outfit, sans-serif`
       ctx.shadowColor = 'rgba(0, 0, 0, 0.4)'
       ctx.shadowBlur = 3
       ctx.fillText(truncate(team.name, 16), radius - size * 0.06, fontSize * 0.35)
@@ -171,8 +171,9 @@ export function SpinWheel({
 
   if (candidates.length === 0) {
     return (
-      <div className="spin-wheel-empty" style={{ width: size, height: size }}>
+      <div className="spin-wheel-empty flex flex-col items-center justify-center gap-1" style={{ width: size, height: size }}>
         <span className="text-sm text-text-secondary">No teams on the wheel</span>
+        <span className="text-xs text-text-muted">Teams appear after leaders vote on this project.</span>
       </div>
     )
   }

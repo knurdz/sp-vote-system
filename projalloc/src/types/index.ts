@@ -29,6 +29,11 @@ export interface Project {
   created_at: string
 }
 
+export interface AssignedTeamInfo {
+  name: string
+  leaderEmail: string
+}
+
 export interface Vote {
   id: string
   project_id: string
