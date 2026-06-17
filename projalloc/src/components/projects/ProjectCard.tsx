@@ -13,29 +13,35 @@ interface ProjectCardProps {
 
 const STATUS_STYLES: Record<
   ProjectStatus,
-  { top: string; hoverBorder: string; hoverTitle: string; border?: string }
+  { top: string; hoverBorder: string; hoverTitle: string; border?: string; hoverShadow: string }
 > = {
   voting: {
     top: 'from-accent/80 via-accent/40 to-transparent',
-    hoverBorder: 'hover:border-accent/25',
+    hoverBorder: 'hover:border-accent/30',
     hoverTitle: 'group-hover:text-accent',
-    border: 'border-accent/20',
+    border: 'border-accent/15',
+    hoverShadow: 'hover:shadow-[0_12px_36px_-4px_rgba(0,0,0,0.18),0_0_24px_rgba(0,201,120,0.08)]',
   },
   upcoming: {
-    top: 'from-yellow/70 via-yellow/30 to-transparent',
-    hoverBorder: 'hover:border-yellow/35',
+    top: 'from-yellow/80 via-yellow/30 to-transparent',
+    hoverBorder: 'hover:border-yellow/30',
     hoverTitle: 'group-hover:text-yellow',
+    border: 'border-yellow/15',
+    hoverShadow: 'hover:shadow-[0_12px_36px_-4px_rgba(0,0,0,0.18),0_0_24px_rgba(245,158,11,0.08)]',
   },
   closed: {
     top: 'from-gray/60 via-gray/20 to-transparent',
-    hoverBorder: 'hover:border-gray/50',
+    hoverBorder: 'hover:border-border/80',
     hoverTitle: 'group-hover:text-text-primary',
+    border: 'border-border',
+    hoverShadow: 'hover:shadow-[0_12px_36px_-4px_rgba(0,0,0,0.18)]',
   },
   assigned: {
     top: 'from-status-assigned/80 via-status-assigned/40 to-transparent',
     hoverBorder: 'hover:border-status-assigned/30',
     hoverTitle: 'group-hover:text-status-assigned',
     border: 'border-status-assigned/15',
+    hoverShadow: 'hover:shadow-[0_12px_36px_-4px_rgba(0,0,0,0.18),0_0_24px_rgba(59,130,246,0.08)]',
   },
 }
 
@@ -53,9 +59,10 @@ export function ProjectCard({
     <Link to={`/project/${project.id}`} className="group block h-full">
       <article
         className={cn(
-          'relative flex h-full flex-col overflow-hidden rounded-card border border-border bg-bg-surface shadow-panel transition-all duration-300 cubic-bezier(0.4, 0, 0.2, 1)',
-          'hover:-translate-y-1.5 hover:shadow-card-hover',
+          'relative flex h-full flex-col overflow-hidden rounded-card border border-border bg-bg-surface backdrop-blur-md shadow-panel transition-all duration-300 cubic-bezier(0.4, 0, 0.2, 1)',
+          'hover:-translate-y-1',
           styles.hoverBorder,
+          styles.hoverShadow,
           styles.border,
         )}
       >

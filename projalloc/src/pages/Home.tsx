@@ -68,9 +68,9 @@ export function Home() {
   return (
     <PageWrapper>
       <div className="relative z-10 space-y-8">
-        <header className="page-header">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-accent">
-            Project Allocation
+        <header className="page-header pt-4">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-accent">
+            FITsp
           </p>
           <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-text-primary sm:text-5xl md:text-6xl">
             Project Board
@@ -80,7 +80,7 @@ export function Home() {
           </p>
         </header>
 
-        <div className="inline-flex flex-wrap gap-1.5 rounded-2xl border border-border bg-bg-surface/60 backdrop-blur-md p-1.5 shadow-panel">
+        <div className="inline-flex flex-wrap gap-1 rounded-2xl border border-border bg-bg-surface/30 backdrop-blur-md p-1 shadow-panel">
           {FILTERS.map((f) => {
             const count = counts[f.value]
             const active = filter === f.value
@@ -89,10 +89,10 @@ export function Home() {
                 key={f.value}
                 type="button"
                 onClick={() => setFilter(f.value)}
-                className={`flex min-h-10 cursor-pointer select-none items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-display font-semibold transition-all duration-200 active:scale-[0.97] ${
+                className={`flex min-h-9 cursor-pointer select-none items-center gap-2 rounded-xl px-4 py-1.5 text-[13px] font-display font-semibold transition-all duration-200 active:scale-[0.97] ${
                   active
-                    ? 'bg-accent text-black shadow-[0_4px_16px_var(--accent-glow)]'
-                    : 'text-text-secondary hover:bg-bg-elevated hover:text-text-primary'
+                    ? 'bg-accent text-black shadow-[0_4px_12px_var(--accent-glow)]'
+                    : 'text-text-secondary hover:bg-bg-elevated/40 hover:text-text-primary'
                 }`}
               >
                 {f.label}
@@ -100,7 +100,7 @@ export function Home() {
                   className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold ${
                     active
                       ? 'bg-black/15 text-black'
-                      : 'bg-accent/8 text-accent border border-accent/20'
+                      : 'bg-accent/8 text-accent border border-accent/15'
                   }`}
                 >
                   {count}

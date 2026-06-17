@@ -50,29 +50,34 @@ export function Login() {
   }
 
   return (
-    <PageWrapper className="flex flex-1 items-center justify-center">
-      <div className="panel w-full max-w-md p-8 text-center">
-        <div className="mb-6 flex justify-center">
-          <Wordmark asLink={false} />
-        </div>
-        <p className="mb-8 text-sm leading-relaxed text-text-secondary">
-          Sign in with your registered Google account to vote or manage projects.
-        </p>
+    <PageWrapper className="flex flex-1 items-center justify-center pt-8 pb-12">
+      <div className="relative w-full max-w-md">
+        {/* Ambient background glow */}
+        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-accent/20 to-accent-glow opacity-40 blur-2xl" aria-hidden />
 
-        {error && (
-          <div className="mb-4">
-            <Alert message={error} />
+        <div className="panel relative w-full p-8 text-center">
+          <div className="mb-6 flex justify-center">
+            <Wordmark asLink={false} />
           </div>
-        )}
+          <p className="mb-8 text-sm leading-relaxed text-text-secondary">
+            Sign in with your registered Google account to vote or manage projects.
+          </p>
 
-        <Button
-          size="lg"
-          className="w-full shadow-[0_0_32px_rgba(0,201,120,0.45)]"
-          disabled={signingIn}
-          onClick={() => void handleSignIn()}
-        >
-          {signingIn ? 'Redirecting…' : 'Sign in with Google'}
-        </Button>
+          {error && (
+            <div className="mb-4">
+              <Alert message={error} />
+            </div>
+          )}
+
+          <Button
+            size="lg"
+            className="w-full"
+            disabled={signingIn}
+            onClick={() => void handleSignIn()}
+          >
+            {signingIn ? 'Redirecting…' : 'Sign in with Google'}
+          </Button>
+        </div>
       </div>
     </PageWrapper>
   )

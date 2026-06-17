@@ -1,4 +1,6 @@
-import knurdzLogo from '@/assets/knurdz-logo-horizontal.png'
+import knurdzLogoDark from '@/assets/knurdz-logo-horizontal.png'
+import knurdzLogoLight from '@/assets/knurdz-logo-horizontal-light.png'
+import { useThemeStore } from '@/store/themeStore'
 
 const GITHUB_URL = 'https://github.com/knurdz/sp-vote-system'
 const KNURDZ_URL = 'https://knurdz.org/'
@@ -22,8 +24,11 @@ function GitHubIcon() {
 }
 
 export function Footer() {
+  const { theme } = useThemeStore()
+  const knurdzLogo = theme === 'light' ? knurdzLogoLight : knurdzLogoDark
+
   return (
-    <footer className="mt-auto shrink-0 border-t border-border/80 bg-bg-surface/50 backdrop-blur-md">
+    <footer className="mt-auto shrink-0 border-t border-border/30 bg-bg-surface/20 shadow-[0_-8px_32px_rgba(0,0,0,0.04)] backdrop-blur-md">
       <div className="mx-auto grid max-w-page grid-cols-1 gap-8 px-6 py-10 sm:px-8 sm:py-12 md:grid-cols-3 md:gap-12">
         {/* Left — Powered by Knurdz */}
         <div className="space-y-3">
@@ -89,9 +94,9 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-border/80 py-4">
+      <div className="border-t border-border/30 py-4">
         <p className="mx-auto max-w-page px-6 text-center font-mono text-[11px] text-text-muted sm:px-8 md:text-left">
-          © 2026 ProjAlloc. All rights reserved.
+          © 2026 FITsp. All rights reserved.
         </p>
       </div>
     </footer>
