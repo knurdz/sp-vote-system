@@ -1,15 +1,15 @@
-import { Navbar } from './Navbar'
-import { Footer } from './Footer'
+import { Footer } from '@/components/layout/Footer'
+import { PreviewNavbar } from './PreviewNavbar'
 
-interface PageWrapperProps {
+interface PreviewPageWrapperProps {
   children: React.ReactNode
   className?: string
 }
 
-export function PageWrapper({ children, className }: PageWrapperProps) {
+export function PreviewPageWrapper({ children, className }: PreviewPageWrapperProps) {
   return (
     <div className="page-glow flex min-h-screen flex-col">
-      <Navbar />
+      <PreviewNavbar />
       <main className={`mx-auto w-full max-w-page flex-1 px-4 py-6 sm:px-8 sm:py-8 ${className ?? ''}`}>
         {children}
       </main>

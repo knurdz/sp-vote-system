@@ -3,16 +3,16 @@ import { truncate } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 
 const SEGMENT_COLORS = [
-  '#00C978',
-  '#00A862',
-  '#4DA3FF',
-  '#3B82F6',
-  '#A78BFA',
-  '#8B5CF6',
-  '#F59E0B',
-  '#F472B6',
-  '#22D3EE',
-  '#64748B',
+  '#54ACBF',
+  '#26658C',
+  '#023859',
+  '#A7EBF2',
+  '#5A8A9A',
+  '#011C40',
+  '#E8B84A',
+  '#94B8C4',
+  '#3D8A9E',
+  '#1A4A6E',
 ]
 
 function segmentTextColor(hex: string) {
@@ -20,7 +20,7 @@ function segmentTextColor(hex: string) {
   const g = Number.parseInt(hex.slice(3, 5), 16)
   const b = Number.parseInt(hex.slice(5, 7), 16)
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance > 0.55 ? '#0A0A0A' : '#F5F5F5'
+  return luminance > 0.55 ? '#011C40' : '#F0F9FA'
 }
 
 interface SpinWheelProps {
@@ -61,7 +61,7 @@ export function SpinWheel({
     // Outer glow ring
     ctx.beginPath()
     ctx.arc(center, center, radius + size * 0.02, 0, 2 * Math.PI)
-    ctx.strokeStyle = 'rgba(0, 201, 120, 0.25)'
+    ctx.strokeStyle = 'rgba(84, 172, 191, 0.35)'
     ctx.lineWidth = size * 0.012
     ctx.stroke()
 
@@ -87,7 +87,7 @@ export function SpinWheel({
       ctx.rotate(start + slice / 2)
       ctx.textAlign = 'right'
       ctx.fillStyle = segmentTextColor(fill)
-      ctx.font = `600 ${fontSize}px Inter, sans-serif`
+      ctx.font = `600 ${fontSize}px "DM Sans", sans-serif`
       ctx.shadowColor = 'rgba(0, 0, 0, 0.4)'
       ctx.shadowBlur = 3
       ctx.fillText(truncate(team.name, 16), radius - size * 0.06, fontSize * 0.35)
@@ -110,19 +110,19 @@ export function SpinWheel({
 
     // Hub
     const hubGrad = ctx.createRadialGradient(center, center, 0, center, center, hubRadius)
-    hubGrad.addColorStop(0, '#222222')
-    hubGrad.addColorStop(1, '#0A0A0A')
+    hubGrad.addColorStop(0, '#26658C')
+    hubGrad.addColorStop(1, '#011C40')
     ctx.beginPath()
     ctx.arc(center, center, hubRadius, 0, 2 * Math.PI)
     ctx.fillStyle = hubGrad
     ctx.fill()
-    ctx.strokeStyle = '#00C978'
+    ctx.strokeStyle = '#54ACBF'
     ctx.lineWidth = Math.max(2.5, size / 160)
     ctx.stroke()
 
     ctx.beginPath()
     ctx.arc(center, center, hubRadius * 0.35, 0, 2 * Math.PI)
-    ctx.fillStyle = '#00C978'
+    ctx.fillStyle = '#A7EBF2'
     ctx.fill()
   }
 
@@ -185,7 +185,7 @@ export function SpinWheel({
           style={{
             borderLeft: `${pointer}px solid transparent`,
             borderRight: `${pointer}px solid transparent`,
-            borderTop: `${pointer * 2.2}px solid #00C978`,
+            borderTop: `${pointer * 2.2}px solid #54ACBF`,
             marginBottom: `-${Math.round(pointer * 0.5)}px`,
           }}
         />

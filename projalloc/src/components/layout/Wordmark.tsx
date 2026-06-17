@@ -7,10 +7,10 @@ interface WordmarkProps {
 
 export function Wordmark({ className = '', asLink = true }: WordmarkProps) {
   const content = (
-    <span className={`inline-flex items-center gap-2 text-[20px] ${className}`}>
+    <span className={`inline-flex items-center gap-2 font-display text-[20px] ${className}`}>
       <span
-        className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
-        style={{ boxShadow: '0 0 8px var(--accent)' }}
+        className="h-1.5 w-1.5 shrink-0 rounded-full bg-ice"
+        style={{ boxShadow: 'var(--glow-ice)' }}
         aria-hidden
       />
       <span>

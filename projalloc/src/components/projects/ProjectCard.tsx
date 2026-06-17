@@ -14,10 +14,10 @@ const STATUS_STYLES: Record<
   { top: string; hoverBorder: string; hoverTitle: string; border?: string }
 > = {
   voting: {
-    top: 'from-accent/80 via-accent/40 to-transparent',
-    hoverBorder: 'hover:border-accent/25',
-    hoverTitle: 'group-hover:text-accent',
-    border: 'border-accent/20',
+    top: 'from-cyan/80 via-cyan/40 to-transparent',
+    hoverBorder: 'hover:border-cyan/35',
+    hoverTitle: 'group-hover:text-ice',
+    border: 'border-cyan/25',
   },
   upcoming: {
     top: 'from-yellow/70 via-yellow/30 to-transparent',
@@ -25,15 +25,15 @@ const STATUS_STYLES: Record<
     hoverTitle: 'group-hover:text-yellow',
   },
   closed: {
-    top: 'from-gray/60 via-gray/20 to-transparent',
-    hoverBorder: 'hover:border-gray/50',
+    top: 'from-steel/60 via-steel/20 to-transparent',
+    hoverBorder: 'hover:border-steel/50',
     hoverTitle: 'group-hover:text-text-primary',
   },
   assigned: {
-    top: 'from-status-assigned/80 via-status-assigned/40 to-transparent',
-    hoverBorder: 'hover:border-status-assigned/30',
-    hoverTitle: 'group-hover:text-status-assigned',
-    border: 'border-status-assigned/15',
+    top: 'from-ice/80 via-ice/40 to-transparent',
+    hoverBorder: 'hover:border-ice/30',
+    hoverTitle: 'group-hover:text-ice',
+    border: 'border-ice/20',
   },
 }
 
@@ -45,8 +45,8 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps) {
     <Link to={`/project/${project.id}`} className="group block h-full">
       <article
         className={cn(
-          'relative flex h-full flex-col overflow-hidden rounded-card border border-border bg-bg-surface transition-all duration-200',
-          'hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)]',
+          'relative flex h-full flex-col overflow-hidden rounded-card border border-[var(--border-cyan)] bg-[var(--panel-bg)] backdrop-blur-sm transition-all duration-200',
+          'hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(1,28,64,0.5),0_0_20px_rgba(84,172,191,0.1)]',
           styles.hoverBorder,
           styles.border,
         )}

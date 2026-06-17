@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
 import { Footer } from '@/components/layout/Footer'
 import { Spinner } from '@/components/ui/Spinner'
+import { EnergyBorder } from '@/components/fx'
 import { useAuth } from '@/hooks/useAuth'
 
 export function Login() {
@@ -39,7 +40,7 @@ export function Login() {
 
   if (loading) {
     return (
-      <div className="page-glow flex min-h-screen flex-col bg-bg-base">
+      <div className="page-glow flex min-h-screen flex-col">
         <div className="flex flex-1 items-center justify-center">
           <Spinner />
         </div>
@@ -50,29 +51,31 @@ export function Login() {
 
   return (
     <PageWrapper className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
-      <div className="panel w-full max-w-md p-8 text-center">
-        <div className="mb-6 flex justify-center">
-          <Wordmark asLink={false} />
-        </div>
-        <p className="mb-8 text-sm text-text-secondary">
-          Sign in with your registered Google account to vote or manage projects.
-        </p>
-
-        {error && (
-          <div className="mb-4">
-            <Alert message={error} />
+      <EnergyBorder pulse className="w-full max-w-md">
+        <div className="p-8 text-center">
+          <div className="mb-6 flex justify-center">
+            <Wordmark asLink={false} />
           </div>
-        )}
+          <p className="mb-8 text-sm text-text-secondary">
+            Sign in with your registered Google account to vote or manage projects.
+          </p>
 
-        <Button
-          size="lg"
-          className="w-full"
-          disabled={signingIn}
-          onClick={() => void handleSignIn()}
-        >
-          {signingIn ? 'Redirecting…' : 'Sign in with Google'}
-        </Button>
-      </div>
+          {error && (
+            <div className="mb-4">
+              <Alert message={error} />
+            </div>
+          )}
+
+          <Button
+            size="lg"
+            className="w-full"
+            disabled={signingIn}
+            onClick={() => void handleSignIn()}
+          >
+            {signingIn ? 'Redirecting…' : 'Sign in with Google'}
+          </Button>
+        </div>
+      </EnergyBorder>
     </PageWrapper>
   )
 }

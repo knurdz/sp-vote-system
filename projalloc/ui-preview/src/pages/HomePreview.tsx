@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { PageWrapper } from '@/components/layout/PageWrapper'
 import { ProjectList } from '@/components/projects/ProjectList'
-import { useProjects } from '@/hooks/useProjects'
-import { CrossHatchDecoration, CyanGlow, LightningAccent } from '@/components/fx'
+import { CrossHatchDecoration, CyanGlow, LightningAccent, EnergyBorder } from '@/components/fx'
+import { Button } from '@/components/ui/Button'
+import { PreviewPageWrapper } from '@preview/components/PreviewPageWrapper'
+import { MOCK_PROJECTS } from '@preview/mockProjects'
 import type { ProjectStatus } from '@/types'
 
 const FILTERS: { label: string; value: ProjectStatus | 'all' }[] = [
@@ -13,31 +14,30 @@ const FILTERS: { label: string; value: ProjectStatus | 'all' }[] = [
   { label: 'Assigned', value: 'assigned' },
 ]
 
-export function Home() {
+export function HomePreview() {
   const [filter, setFilter] = useState<ProjectStatus | 'all'>('all')
-  const { projects: allProjects, loading, error } = useProjects('all')
 
   const projects = useMemo(
     () =>
       filter === 'all'
-        ? allProjects
-        : allProjects.filter((p) => p.status === filter),
-    [allProjects, filter],
+        ? MOCK_PROJECTS
+        : MOCK_PROJECTS.filter((p) => p.status === filter),
+    [filter],
   )
 
   const counts = useMemo(
     () => ({
-      all: allProjects.length,
-      voting: allProjects.filter((p) => p.status === 'voting').length,
-      upcoming: allProjects.filter((p) => p.status === 'upcoming').length,
-      closed: allProjects.filter((p) => p.status === 'closed').length,
-      assigned: allProjects.filter((p) => p.status === 'assigned').length,
+      all: MOCK_PROJECTS.length,
+      voting: MOCK_PROJECTS.filter((p) => p.status === 'voting').length,
+      upcoming: MOCK_PROJECTS.filter((p) => p.status === 'upcoming').length,
+      closed: MOCK_PROJECTS.filter((p) => p.status === 'closed').length,
+      assigned: MOCK_PROJECTS.filter((p) => p.status === 'assigned').length,
     }),
-    [allProjects],
+    [],
   )
 
   return (
-    <PageWrapper>
+    <PreviewPageWrapper>
       <header className="relative mb-10 overflow-hidden">
         <CrossHatchDecoration
           variant="circle"
@@ -99,7 +99,33 @@ export function Home() {
         })}
       </div>
 
-      <ProjectList projects={projects} loading={loading} error={error} />
-    </PageWrapper>
+      <ProjectList projects={projects} loading={false} error={null} />
+
+      <section className="mt-16 grid gap-6 md:grid-cols-2">
+        <EnergyBorder pulse>
+          <div className="p-6">
+            <p className="font-mono text-[11px] uppercase tracking-widest text-cyan">CTA Preview</p>
+            <h2 className="font-display mt-2 text-xl font-bold text-text-primary">Primary Action</h2>
+            <p className="mt-2 text-sm text-text-secondary">
+              Energy border with animated pulse on primary buttons.
+            </p>
+            <Button size="lg" className="mt-4">
+              Vote Now
+            </Button>
+          </div>
+        </EnergyBorder>
+
+        <div className="panel p-6">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-cyan">Components</p>
+          <h2 className="font-display mt-2 text-xl font-bold text-text-primary">Button Variants</h2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Button>Primary</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="ghost">Ghost</Button>
+            <Button variant="danger">Danger</Button>
+          </div>
+        </div>
+      </section>
+    </PreviewPageWrapper>
   )
 }

@@ -56,7 +56,7 @@ export function Navbar() {
   const displayInitials = getInitials(displayName)
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-bg-surface/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-[var(--border-cyan)] bg-[var(--panel-bg)] backdrop-blur-md">
       <nav className="mx-auto flex h-[68px] max-w-page items-center justify-between gap-6 px-8">
         {/* Left — brand + navigation */}
         <div className="flex min-w-0 items-center gap-5">
@@ -69,7 +69,7 @@ export function Navbar() {
 
           <div className="hidden h-8 w-px shrink-0 bg-border sm:block" aria-hidden />
 
-          <div className="flex items-center rounded-xl border border-border bg-bg-elevated p-1">
+          <div className="flex items-center rounded-xl border border-[var(--border-cyan)] bg-ocean/40 p-1">
             {visibleNavItems.map(({ to, label, match, icon }) => {
               const active = match(pathname)
               return (
@@ -79,8 +79,8 @@ export function Navbar() {
                   className={cn(
                     'inline-flex cursor-pointer select-none items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-medium transition-all',
                     active
-                      ? 'bg-accent/10 text-accent shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--accent)_30%,transparent)]'
-                      : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary',
+                      ? 'bg-cyan/10 text-ice shadow-[inset_0_0_0_1px_rgba(167,235,242,0.35),0_0_12px_rgba(84,172,191,0.15)]'
+                      : 'text-text-secondary hover:bg-ocean/50 hover:text-text-primary',
                   )}
                 >
                   {icon}
@@ -94,8 +94,8 @@ export function Navbar() {
         {/* Right — account */}
         <div className="flex shrink-0 items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-3 rounded-xl border border-border bg-bg-elevated px-3 py-2">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-accent/30 bg-accent/15 text-[11px] font-semibold text-accent">
+            <div className="flex items-center gap-3 rounded-xl border border-[var(--border-cyan)] bg-ocean/40 px-3 py-2">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan/40 bg-cyan/15 text-[11px] font-semibold text-ice shadow-glow-cyan">
                 {displayInitials}
               </div>
 

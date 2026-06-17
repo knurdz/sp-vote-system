@@ -18,7 +18,7 @@ export function SpinResult({ open, winnerName, onConfirm, loading, error }: Spin
       particleCount: 120,
       spread: 80,
       origin: { y: 0.6 },
-      colors: ['#00C978', '#4DA3FF', '#FFD600', '#F5F5F5'],
+      colors: ['#54ACBF', '#A7EBF2', '#26658C', '#F0F9FA'],
     })
   }, [open])
 
@@ -30,7 +30,7 @@ export function SpinResult({ open, winnerName, onConfirm, loading, error }: Spin
       <div className="spin-overlay-card relative z-10 max-w-sm">
         <div className="spin-overlay-accent" />
         <div className="px-6 py-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-accent/30 bg-accent-glow text-3xl">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-cyan/40 bg-accent-glow text-3xl shadow-glow-cyan">
             🏆
           </div>
           <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-accent">
