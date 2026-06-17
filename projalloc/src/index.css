@@ -17,41 +17,42 @@
   --primary-900: 158 100% 12%;
   --primary-950: 158 100% 6%;
 
-  /* Dark Theme Semantics (High-end slate gray base) */
+  /* Dark Theme Semantics (High-end slate gray base + Frosted glass) */
   --bg-base: #030712;
-  --bg-surface: #0b0f19;
-  --bg-elevated: #151b2c;
-  --border: #1e293b;
+  --bg-surface: rgba(11, 15, 25, 0.45);
+  --bg-elevated: rgba(21, 27, 44, 0.7);
+  --border: rgba(255, 255, 255, 0.07);
   --accent: #00C978;
   --accent-hover: #05e088;
-  --accent-glow: rgba(0, 201, 120, 0.1);
+  --accent-glow: rgba(0, 201, 120, 0.12);
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #64748b;
   --green: #00C978;
-  --yellow: #f59e0b;
-  --gray: #64748b;
+  --yellow: #d97706;
+  --gray: #34748b;
   --red: #ef4444;
   --status-voting: #00C978;
-  --status-upcoming: #f59e0b;
-  --status-closed: #64748b;
-  --status-assigned: #3b82f6;
+  --status-upcoming: #d97706;
+  --status-closed: #34748b;
+  --status-assigned: #2563eb;
 
-  /* Ambient Details */
-  --page-glow-color: rgba(0, 201, 120, 0.07);
-  --side-glow-green: rgba(0, 201, 120, 0.08);
-  --side-glow-blue: rgba(59, 130, 246, 0.05);
+  /* Ambient Details & Shadows */
+  --page-glow-color: rgba(0, 201, 120, 0.08);
+  --side-glow-green: rgba(0, 201, 120, 0.09);
+  --side-glow-blue: rgba(59, 130, 246, 0.06);
   --side-glow-fade: rgba(0, 201, 120, 0.02);
-  --grid-color: rgba(255, 255, 255, 0.015);
+  --grid-color: rgba(255, 255, 255, 0.02);
+  --panel-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.05);
   color-scheme: dark;
 }
 
 [data-theme='light'] {
-  /* Light Theme Semantics (Clean cool grays) */
-  --bg-base: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-elevated: #f1f5f9;
-  --border: #e2e8f0;
+  /* Light Theme Semantics (Clean cool grays + White frosted glass) */
+  --bg-base: #f1f5f9;
+  --bg-surface: rgba(255, 255, 255, 0.75);
+  --bg-elevated: rgba(241, 245, 249, 0.85);
+  --border: rgba(15, 23, 42, 0.08);
   --accent: #00A862;
   --accent-hover: #00C978;
   --accent-glow: rgba(0, 168, 98, 0.08);
@@ -60,19 +61,20 @@
   --text-muted: #94a3b8;
   --green: #00A862;
   --yellow: #d97706;
-  --gray: #94a3b8;
+  --gray: #34748b;
   --red: #dc2626;
   --status-voting: #00A862;
   --status-upcoming: #d97706;
-  --status-closed: #94a3b8;
+  --status-closed: #34748b;
   --status-assigned: #2563eb;
 
-  /* Ambient Details */
+  /* Ambient Details & Shadows */
   --page-glow-color: rgba(0, 168, 98, 0.05);
   --side-glow-green: rgba(0, 168, 98, 0.05);
   --side-glow-blue: rgba(37, 99, 235, 0.03);
   --side-glow-fade: rgba(0, 168, 98, 0.01);
-  --grid-color: rgba(15, 23, 42, 0.02);
+  --grid-color: rgba(15, 23, 42, 0.025);
+  --panel-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.05), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5);
   color-scheme: light;
 }
 
@@ -175,9 +177,25 @@ body {
   border-radius: 20px;
   border: 1px solid var(--border);
   background-color: var(--bg-surface);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(8px);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(16px) saturate(110%);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@utility glass-panel-interactive {
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-surface);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: blur(16px) saturate(110%);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+    box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.18), 0 0 20px 0 var(--accent-glow);
+    background-color: color-mix(in srgb, var(--accent) 3%, var(--bg-surface));
+  }
 }
 
 @utility page-header {
@@ -198,7 +216,8 @@ body {
   width: 100%;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background-color: var(--bg-base);
+  background-color: var(--bg-surface);
+  backdrop-filter: blur(8px);
   padding: 0.65rem 0.95rem;
   font-size: 14px;
   color: var(--text-primary);
@@ -211,6 +230,7 @@ body {
   &:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-glow);
+    background-color: color-mix(in srgb, var(--accent) 2%, var(--bg-surface));
   }
 }
 
