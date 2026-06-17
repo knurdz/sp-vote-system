@@ -5,6 +5,7 @@ import { Wordmark } from '@/components/layout/Wordmark'
 import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
 import { Footer } from '@/components/layout/Footer'
+import { PageShell } from '@/components/layout/PageShell'
 import { Spinner } from '@/components/ui/Spinner'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -39,22 +40,22 @@ export function Login() {
 
   if (loading) {
     return (
-      <div className="page-glow flex min-h-screen flex-col bg-bg-base">
+      <PageShell>
         <div className="flex flex-1 items-center justify-center">
           <Spinner />
         </div>
         <Footer />
-      </div>
+      </PageShell>
     )
   }
 
   return (
-    <PageWrapper className="flex min-h-[calc(100vh-8rem)] items-center justify-center">
+    <PageWrapper className="flex flex-1 items-center justify-center">
       <div className="panel w-full max-w-md p-8 text-center">
         <div className="mb-6 flex justify-center">
           <Wordmark asLink={false} />
         </div>
-        <p className="mb-8 text-sm text-text-secondary">
+        <p className="mb-8 text-sm leading-relaxed text-text-secondary">
           Sign in with your registered Google account to vote or manage projects.
         </p>
 
@@ -66,7 +67,7 @@ export function Login() {
 
         <Button
           size="lg"
-          className="w-full"
+          className="w-full shadow-[0_0_32px_rgba(0,201,120,0.45)]"
           disabled={signingIn}
           onClick={() => void handleSignIn()}
         >

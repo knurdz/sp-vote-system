@@ -111,14 +111,14 @@ export function useVote(projectId: string | undefined) {
 
     const votingOpen = await isProjectVotingOpen(projectId)
     if (!votingOpen) {
-      setError('Voting is no longer open for this project.')
+      setError('Voting has closed on this project.')
       setActionLoading(false)
       return
     }
 
     const alreadyVoted = await teamHasVoteOnProject(projectId, teamId)
     if (alreadyVoted) {
-      setError('Your team has already voted on this project.')
+      setError('Your team already voted on this one.')
       setActionLoading(false)
       await fetchVoteState()
       return
@@ -145,7 +145,7 @@ export function useVote(projectId: string | undefined) {
 
     const votingOpen = await isProjectVotingOpen(projectId)
     if (!votingOpen) {
-      setError('Voting is closed — votes can no longer be withdrawn.')
+      setError('Voting is closed — you can’t pull your vote back now.')
       setActionLoading(false)
       return
     }

@@ -1,5 +1,8 @@
+import { motion } from 'framer-motion'
 import { Navbar } from './Navbar'
 import { Footer } from './Footer'
+import { PageShell } from './PageShell'
+import { cn } from '@/lib/utils'
 
 interface PageWrapperProps {
   children: React.ReactNode
@@ -8,12 +11,20 @@ interface PageWrapperProps {
 
 export function PageWrapper({ children, className }: PageWrapperProps) {
   return (
-    <div className="page-glow flex min-h-screen flex-col bg-bg-base">
+    <PageShell>
       <Navbar />
-      <main className={`mx-auto w-full max-w-page flex-1 px-4 py-6 sm:px-8 sm:py-8 ${className ?? ''}`}>
+      <motion.main
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className={cn(
+          'mx-auto flex w-full max-w-page flex-1 flex-col px-4 py-8 sm:px-8 relative z-10',
+          className,
+        )}
+      >
         {children}
-      </main>
+      </motion.main>
       <Footer />
-    </div>
+    </PageShell>
   )
 }

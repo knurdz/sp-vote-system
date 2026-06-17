@@ -1,20 +1,18 @@
 import { useMemo } from 'react'
 import { ProjectCard } from './ProjectCard'
-import { Spinner } from '@/components/ui/Spinner'
 import { Alert } from '@/components/ui/Alert'
-import type { Project, ProjectStatus } from '@/types'
+import { ProjectCardSkeleton } from '@/components/ui/Skeleton'
+import { sortProjectsByStatus } from '@/lib/utils'
+import type { AssignedTeamInfo, Project } from '@/types'
 
 interface ProjectListProps {
   projects: Project[]
   loading: boolean
   error: string | null
-}
-
-const STATUS_ORDER: Record<ProjectStatus, number> = {
-  voting: 0,
-  upcoming: 1,
-  closed: 2,
-  assigned: 3,
+  emptyMessage?: string
+  emptyDescription?: string
+  assignedTeams?: Record<string, AssignedTeamInfo>
+  showAdminEmail?: boolean
 }
 
 function EmptyIllustration() {
@@ -33,19 +31,23 @@ function EmptyIllustration() {
   )
 }
 
-export function ProjectList({ projects, loading, error }: ProjectListProps) {
-  const sorted = useMemo(
-    () =>
-      [...projects].sort(
-        (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status],
-      ),
-    [projects],
-  )
+export function ProjectList({
+  projects,
+  loading,
+  error,
+  emptyMessage = 'No projects here yet',
+  emptyDescription = 'Projects will appear here once an admin adds them.',
+  assignedTeams = {},
+  showAdminEmail = false,
+}: ProjectListProps) {
+  const sorted = useMemo(() => sortProjectsByStatus(projects), [projects])
 
   if (loading) {
     return (
-      <div className="flex justify-center py-16">
-        <Spinner />
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <ProjectCardSkeleton key={i} />
+        ))}
       </div>
     )
   }
@@ -56,20 +58,23 @@ export function ProjectList({ projects, loading, error }: ProjectListProps) {
 
   if (projects.length === 0) {
     return (
-      <div className="rounded-card border border-border bg-bg-surface py-20 text-center">
+      <div className="rounded-card border border-border bg-bg-surface/50 backdrop-blur-md py-20 text-center shadow-panel">
         <EmptyIllustration />
-        <p className="text-text-secondary">No projects here yet</p>
+        <p className="font-display font-semibold text-text-primary text-[17px]">{emptyMessage}</p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">{emptyDescription}</p>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {sorted.map((project) => (
         <ProjectCard
           key={project.id}
           project={project}
           featured={project.status === 'voting'}
+          assignedTeam={assignedTeams[project.id]}
+          showAdminEmail={showAdminEmail}
         />
       ))}
     </div>

@@ -8,13 +8,13 @@ interface BadgeProps {
 }
 
 const colors: Record<string, string> = {
-  voting: 'bg-accent-glow text-green border border-accent/40',
-  upcoming: 'bg-yellow/10 text-yellow border border-yellow/40',
-  closed: 'bg-status-closed/10 text-status-closed border border-status-closed/40',
-  assigned: 'bg-status-assigned/10 text-status-assigned border border-status-assigned/40',
-  admin: 'bg-accent-glow text-accent border border-accent/40',
-  leader: 'bg-accent-glow text-green border border-accent/40',
-  viewer: 'bg-gray/10 text-text-secondary border border-gray/40',
+  voting: 'bg-accent/8 text-green border border-accent/25',
+  upcoming: 'bg-yellow/8 text-yellow border border-yellow/25',
+  closed: 'bg-gray/8 text-text-muted border border-border',
+  assigned: 'bg-status-assigned/8 text-status-assigned border border-status-assigned/25',
+  admin: 'bg-accent/8 text-accent border border-accent/25',
+  leader: 'bg-accent/8 text-green border border-accent/25',
+  viewer: 'bg-gray/8 text-text-secondary border border-border',
   default: 'bg-bg-elevated text-text-secondary border border-border',
 }
 
@@ -22,13 +22,13 @@ export function Badge({ children, variant = 'default', className }: BadgeProps) 
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-[3px] text-[12px] font-medium',
+        'inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider border',
         colors[variant] ?? colors.default,
         className,
       )}
     >
       {variant === 'voting' && (
-        <span className="h-1 w-1 rounded-full bg-green animate-pulse-dot" aria-hidden />
+        <span className="h-1.5 w-1.5 rounded-full bg-green animate-pulse-dot" aria-hidden />
       )}
       {children}
     </span>

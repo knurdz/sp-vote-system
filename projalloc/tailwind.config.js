@@ -24,19 +24,21 @@ export default {
         'status-assigned': 'var(--status-assigned)',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        display: ['Outfit', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
       },
       maxWidth: {
         page: '1200px',
       },
       borderRadius: {
-        card: '16px',
-        btn: '10px',
+        card: '20px',
+        btn: '12px',
       },
       boxShadow: {
-        'accent-glow': '0 0 12px var(--accent-glow)',
-        'card-hover': '0 0 0 1px var(--accent-glow)',
+        'accent-glow': '0 0 24px var(--accent-glow)',
+        'card-hover': '0 12px 36px -8px rgba(0, 0, 0, 0.25), 0 0 0 1px var(--accent-glow)',
+        'panel': '0 8px 30px rgba(0, 0, 0, 0.04)',
       },
     },
   },

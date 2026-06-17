@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import { Button } from '@/components/ui/Button'
@@ -92,10 +93,13 @@ export function AdminTeams() {
     <PageWrapper>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <Link to="/admin" className="text-sm text-text-secondary hover:text-text-primary">
-            ← Dashboard
+          <Link to="/admin" className="inline-flex items-center gap-1 font-display text-sm font-semibold text-text-secondary hover:text-accent transition-colors">
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+              <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Dashboard
           </Link>
-          <h1 className="mt-2 text-3xl font-bold">Manage Teams</h1>
+          <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl">Manage Teams</h1>
         </div>
         <Button onClick={openCreate}>Add Team</Button>
       </div>
@@ -114,24 +118,48 @@ export function AdminTeams() {
         </div>
       ) : error ? (
         <Alert message={error} />
+      ) : teams.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-bg-surface/50 backdrop-blur-md py-16 text-center shadow-panel">
+          <p className="font-display font-bold text-text-primary text-[17px]">No teams registered yet</p>
+          <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">
+            Add teams manually or upload a CSV with team names and leader account emails.
+          </p>
+        </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border bg-bg-surface">
-              <tr>
-                <th className="px-4 py-3 font-medium text-text-secondary">Team Name</th>
-                <th className="px-4 py-3 font-medium text-text-secondary">Registered</th>
-                <th className="px-4 py-3 font-medium text-text-secondary">Actions</th>
+        <div className="w-full overflow-x-auto rounded-2xl border border-border bg-bg-surface/50 backdrop-blur-md shadow-panel">
+          <table className="w-full min-w-[600px] text-left text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-border bg-bg-elevated/40">
+                <th className="px-5 py-4 font-display font-semibold text-[13px] uppercase tracking-wider text-text-muted">Team Name</th>
+                <th className="px-5 py-4 font-display font-semibold text-[13px] uppercase tracking-wider text-text-muted">Registered</th>
+                <th className="px-5 py-4 font-display font-semibold text-[13px] uppercase tracking-wider text-text-muted">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <motion.tbody
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.04 },
+                },
+              }}
+              initial="hidden"
+              animate="show"
+            >
               {teams.map((team) => (
-                <tr key={team.id} className="border-b border-border bg-bg-base">
-                  <td className="px-4 py-3">{team.name}</td>
-                  <td className="px-4 py-3 text-text-secondary">
+                <motion.tr
+                  key={team.id}
+                  variants={{
+                    hidden: { opacity: 0, y: 8 },
+                    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 350, damping: 24 } },
+                  }}
+                  className="border-b border-border/60 bg-transparent hover:bg-bg-elevated/20 transition-colors"
+                >
+                  <td className="px-5 py-4 font-semibold text-text-primary">{team.name}</td>
+                  <td className="px-5 py-4 font-mono text-[13px] text-text-secondary">
                     {formatDateTime(team.created_at)}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-4">
                     <div className="flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => openEdit(team)}>
                         Edit
@@ -145,9 +173,9 @@ export function AdminTeams() {
                       </Button>
                     </div>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
-            </tbody>
+            </motion.tbody>
           </table>
         </div>
       )}
