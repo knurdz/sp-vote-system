@@ -82,6 +82,12 @@
   --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-display: 'Outfit', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
 }
 
 * {
