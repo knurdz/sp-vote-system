@@ -190,9 +190,9 @@ export function DateTimePicker({
                   type="button"
                   onClick={() => selectTime(hour12, minute, p)}
                   className={cn(
-                    'rounded-lg border px-2.5 py-1.5 text-[12px] font-medium transition-all',
+                    'rounded-lg border px-2.5 py-1.5 text-[12px] font-display font-semibold transition-all duration-200 active:scale-[0.97]',
                     period === p
-                      ? 'border-accent bg-accent/10 text-accent'
+                      ? 'border-accent bg-accent/8 text-accent shadow-[0_0_12px_var(--accent-glow)]'
                       : 'border-border text-text-secondary hover:border-accent/30',
                   )}
                 >
@@ -297,10 +297,10 @@ export function DateTimePicker({
                     type="button"
                     onClick={() => selectDay(day)}
                     className={cn(
-                      'aspect-square rounded-lg text-[13px] transition-all',
+                      'aspect-square rounded-lg text-[13px] font-display font-semibold transition-all duration-200 active:scale-[0.95]',
                       !inMonth && 'text-text-muted/40',
                       inMonth && !isSelected && 'text-text-secondary hover:bg-bg-surface hover:text-text-primary',
-                      isSelected && 'bg-accent font-semibold text-black shadow-accent-glow',
+                      isSelected && 'bg-accent text-black shadow-accent-glow',
                       today && !isSelected && 'ring-1 ring-accent/40',
                     )}
                   >
@@ -354,9 +354,9 @@ export function DateTimePicker({
                   type="button"
                   onClick={() => selectTime(hour12, minute, p)}
                   className={cn(
-                    'rounded-lg border py-2 text-[13px] font-medium transition-all',
+                    'rounded-lg border py-2 text-[13px] font-display font-semibold transition-all duration-200 active:scale-[0.97]',
                     period === p
-                      ? 'border-accent bg-accent/10 text-accent'
+                      ? 'border-accent bg-accent/8 text-accent shadow-[0_0_12px_var(--accent-glow)]'
                       : 'border-border text-text-secondary hover:border-accent/30 hover:text-text-primary',
                   )}
                 >

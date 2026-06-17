@@ -87,7 +87,7 @@ export function SpinWheel({
       ctx.rotate(start + slice / 2)
       ctx.textAlign = 'right'
       ctx.fillStyle = segmentTextColor(fill)
-      ctx.font = `600 ${fontSize}px Inter, sans-serif`
+      ctx.font = `600 ${fontSize}px Outfit, sans-serif`
       ctx.shadowColor = 'rgba(0, 0, 0, 0.4)'
       ctx.shadowBlur = 3
       ctx.fillText(truncate(team.name, 16), radius - size * 0.06, fontSize * 0.35)

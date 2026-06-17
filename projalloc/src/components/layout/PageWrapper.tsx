@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { Navbar } from './Navbar'
 import { Footer } from './Footer'
 import { PageShell } from './PageShell'
@@ -12,14 +13,17 @@ export function PageWrapper({ children, className }: PageWrapperProps) {
   return (
     <PageShell>
       <Navbar />
-      <main
+      <motion.main
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
-          'mx-auto flex w-full max-w-page flex-1 flex-col px-4 py-8 sm:px-8',
+          'mx-auto flex w-full max-w-page flex-1 flex-col px-4 py-8 sm:px-8 relative z-10',
           className,
         )}
       >
         {children}
-      </main>
+      </motion.main>
       <Footer />
     </PageShell>
   )
