@@ -97,7 +97,7 @@ export function Navbar() {
                     )}
                   >
                     {icon}
-                    <span className="hidden xs:inline">{label}</span>
+                    <span>{label}</span>
                   </Link>
                 )
               })}
@@ -115,7 +115,7 @@ export function Navbar() {
                 <div className="hidden min-w-0 xl:block">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate text-[13px] font-medium text-text-primary">
-                      {truncate(primaryLabel, 24)}
+                      {truncate(primaryLabel, 16)}
                     </span>
                     {isAdmin && <Badge variant="admin">admin</Badge>}
                   </div>
@@ -134,9 +134,9 @@ export function Navbar() {
                   className="shrink-0 cursor-pointer select-none font-display text-[13px] font-semibold text-text-secondary transition-colors hover:text-accent flex items-center gap-1 px-2 py-1.5 xl:p-0"
                   aria-label="Sign out"
                 >
-                  <span className="hidden xl:inline">Sign out</span>
+                  <span className="hidden 2xl:inline">Sign out</span>
                   <svg
-                    className="h-4 w-4 xl:hidden"
+                    className="h-4 w-4 2xl:hidden"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"

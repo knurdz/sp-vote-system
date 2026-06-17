@@ -58,7 +58,7 @@ export function ThemeToggle() {
             )}
             <span className="relative z-10 flex items-center gap-1.5">
               {icon}
-              <span className="hidden xl:inline">{label}</span>
+              <span className="hidden 2xl:inline">{label}</span>
             </span>
           </button>
         )
