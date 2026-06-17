@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
@@ -291,7 +292,9 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           className="absolute inset-0 bg-black/80 backdrop-blur-md"
           onClick={() => {
             if (!showResult && !scheduleOpen) onClose()
@@ -299,7 +302,10 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
           aria-hidden
         />
 
-        <div
+        <motion.div
+          initial={{ opacity: 0, scale: 0.94, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 350, damping: 25 }}
           className="spin-overlay-card relative z-10"
           role="dialog"
           aria-modal
@@ -308,22 +314,22 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
           <div className="spin-overlay-accent" />
 
           {/* Header */}
-          <div className="flex shrink-0 items-start justify-between gap-3 px-5 pb-3 pt-4">
+          <div className="flex shrink-0 items-start justify-between gap-3 px-6 pb-3 pt-5">
             <div className="min-w-0">
-              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-accent">
-                Team allocation
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-accent">
+                Team Allocation Round
               </p>
-              <h2 id="spin-title" className="truncate text-lg font-semibold text-text-primary">
+              <h2 id="spin-title" className="truncate font-display text-lg font-bold tracking-tight text-text-primary">
                 {project.title}
               </h2>
-              <p className="text-sm text-text-secondary">{project.company}</p>
+              <p className="text-xs text-text-secondary">{project.company}</p>
             </div>
-            <div className="flex shrink-0 items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1.5">
               {!isLocked && (
                 <button
                   type="button"
                   onClick={() => setScheduleOpen(true)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-secondary transition-colors hover:border-accent/40 hover:text-accent"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-border text-text-secondary transition-all duration-200 hover:border-accent/40 hover:text-accent hover:bg-accent/5"
                   aria-label="Schedule spin event"
                   title="Schedule event"
                 >
@@ -334,7 +340,7 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
                 type="button"
                 onClick={onClose}
                 disabled={showResult}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text-muted transition-colors hover:border-border hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-border text-text-muted transition-all duration-200 hover:border-border hover:text-text-primary hover:bg-bg-elevated/40 disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Close"
               >
                 ✕
@@ -343,7 +349,7 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
           </div>
 
           {/* Body */}
-          <div className="flex min-h-0 flex-1 flex-col items-center overflow-hidden px-5 pb-5">
+          <div className="flex min-h-0 flex-1 flex-col items-center overflow-hidden px-6 pb-6">
             {loading ? (
               <div className="flex flex-1 items-center justify-center py-12">
                 <Spinner />
@@ -351,19 +357,19 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
             ) : (
               <>
                 {error && (
-                  <div className="mb-3 w-full">
+                  <div className="mb-3.5 w-full">
                     <Alert message={error} />
                   </div>
                 )}
                 {lockError && !showResult && (
-                  <div className="mb-3 w-full">
+                  <div className="mb-3.5 w-full">
                     <Alert message={lockError} />
                   </div>
                 )}
 
                 {/* Candidates */}
-                <div className="mb-3 w-full">
-                  <p className="mb-2 text-center text-[11px] font-medium uppercase tracking-wider text-text-muted">
+                <div className="mb-4 w-full">
+                  <p className="mb-2 text-center font-mono text-[10px] font-bold uppercase tracking-wider text-text-muted">
                     {candidates.length} {candidates.length === 1 ? 'team' : 'teams'} on the wheel
                   </p>
                   {candidates.length > 0 && (
@@ -380,12 +386,12 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
                 {/* Wheel or locked result */}
                 <div className="flex flex-1 flex-col items-center justify-center">
                   {isLocked && spinLog ? (
-                    <div className="w-full rounded-card border border-accent/25 bg-accent-glow px-6 py-10 text-center">
-                      <p className="text-xs font-medium uppercase tracking-wider text-text-secondary">
-                        Selection locked
+                    <div className="w-full rounded-2xl border border-accent/20 bg-accent/8 px-6 py-12 text-center shadow-panel">
+                      <p className="font-mono text-[9px] font-bold uppercase tracking-widest text-text-muted">
+                        Selection Locked
                       </p>
-                      <p className="mt-1 text-sm text-text-secondary">Selected team</p>
-                      <p className="mt-2 text-2xl font-bold text-accent-hover">
+                      <p className="mt-1.5 text-[13px] text-text-secondary">Selected Team</p>
+                      <p className="mt-2 font-display text-2xl font-extrabold text-accent-hover">
                         {spinLog.winning_team_name}
                       </p>
                     </div>
@@ -402,7 +408,7 @@ export function SpinModal({ project, open, onClose, onLocked }: SpinModalProps) 
               </>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Schedule sub-modal */}

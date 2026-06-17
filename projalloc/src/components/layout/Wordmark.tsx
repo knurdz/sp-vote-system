@@ -7,21 +7,25 @@ interface WordmarkProps {
 
 export function Wordmark({ className = '', asLink = true }: WordmarkProps) {
   const content = (
-    <span className={`inline-flex items-center gap-2 text-[20px] ${className}`}>
+    <span className={`inline-flex items-center gap-2 font-display text-[21px] tracking-tight ${className}`}>
       <span
-        className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
-        style={{ boxShadow: '0 0 8px var(--accent)' }}
+        className="h-2 w-2 shrink-0 rounded-full bg-accent transition-all duration-300"
+        style={{ boxShadow: '0 0 10px var(--accent)' }}
         aria-hidden
       />
-      <span>
-        <span className="font-semibold text-text-primary">Proj</span>
-        <span className="font-semibold text-accent">Alloc</span>
+      <span className="font-bold">
+        <span className="text-text-primary">Proj</span>
+        <span className="text-accent">Alloc</span>
       </span>
     </span>
   )
 
   if (asLink) {
-    return <Link to="/">{content}</Link>
+    return (
+      <Link to="/" className="group inline-block transition-opacity hover:opacity-95">
+        {content}
+      </Link>
+    )
   }
 
   return content

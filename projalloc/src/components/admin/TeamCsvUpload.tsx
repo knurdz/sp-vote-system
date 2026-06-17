@@ -124,30 +124,30 @@ export function TeamCsvUpload({ teams, onComplete }: TeamCsvUploadProps) {
   const canImport = preview.length > 0 && parseErrors.length === 0 && !importing
 
   return (
-    <section className="panel mb-8 p-6">
+    <section className="panel mb-8 p-6 sm:p-8">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-text-primary">Import Teams from CSV</h2>
-          <p className="mt-1 max-w-2xl text-sm text-text-secondary">
+          <h2 className="font-display text-lg font-bold text-text-primary">Import Teams from CSV</h2>
+          <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-text-secondary">
             Upload a CSV with team name and account email. Existing teams are matched by account
             email and updated; new emails are added as teams.
           </p>
         </div>
         <Button type="button" variant="secondary" size="sm" onClick={downloadTemplate}>
-          Download template
+          Download Template
         </Button>
       </div>
 
-      <div className="rounded-xl border border-dashed border-border bg-bg-base p-4">
+      <div className="rounded-2xl border border-dashed border-border bg-bg-base/40 p-5">
         <input
           ref={inputRef}
           type="file"
           accept=".csv,text/csv"
           onChange={(e) => void handleFileChange(e)}
-          className="block w-full text-sm text-text-secondary file:mr-4 file:rounded-btn file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-medium file:text-black hover:file:bg-accent-hover"
+          className="block w-full text-sm text-text-secondary file:mr-4 file:rounded-xl file:border-0 file:bg-accent file:px-4 file:py-2 file:text-xs file:font-display file:font-bold file:uppercase file:tracking-wide file:text-black hover:file:bg-accent-hover cursor-pointer"
         />
-        <p className="mt-2 text-[12px] text-text-muted">
-          Expected columns: <span className="font-mono">team_name, account_email</span>
+        <p className="mt-2.5 font-mono text-[11px] text-text-muted">
+          Expected columns: <span className="font-mono text-text-secondary">team_name, account_email</span>
         </p>
       </div>
 
@@ -172,16 +172,16 @@ export function TeamCsvUpload({ teams, onComplete }: TeamCsvUploadProps) {
       )}
 
       {preview.length > 0 && parseErrors.length === 0 && (
-        <div className="mt-4 overflow-hidden rounded-xl border border-border">
-          <div className="border-b border-border bg-bg-surface px-4 py-2 text-sm text-text-secondary">
+        <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-bg-surface/50 backdrop-blur-md shadow-panel">
+          <div className="border-b border-border bg-bg-elevated/40 px-5 py-3 text-sm font-display font-bold text-text-primary">
             Preview ({preview.length} team{preview.length === 1 ? '' : 's'})
           </div>
-          <div className="max-h-56 overflow-y-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border bg-bg-elevated">
-                <tr>
-                  <th className="px-4 py-2 font-medium text-text-secondary">Team Name</th>
-                  <th className="px-4 py-2 font-medium text-text-secondary">Action</th>
+          <div className="max-h-56 overflow-y-auto w-full overflow-x-auto">
+            <table className="w-full min-w-[400px] text-left text-sm border-collapse">
+              <thead>
+                <tr className="border-b border-border bg-bg-elevated/20">
+                  <th className="px-5 py-2.5 font-display font-semibold text-[12px] uppercase tracking-wider text-text-muted">Team Name</th>
+                  <th className="px-5 py-2.5 font-display font-semibold text-[12px] uppercase tracking-wider text-text-muted">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -190,10 +190,14 @@ export function TeamCsvUpload({ teams, onComplete }: TeamCsvUploadProps) {
                     (team) => team.leader_email.toLowerCase() === row.leader_email,
                   )
                   return (
-                    <tr key={`${row.line}-${row.leader_email}`} className="border-b border-border">
-                      <td className="px-4 py-2">{row.name}</td>
-                      <td className="px-4 py-2 text-text-secondary">
-                        {exists ? 'Update name' : 'Create team'}
+                    <tr key={`${row.line}-${row.leader_email}`} className="border-b border-border/60 hover:bg-bg-elevated/10 transition-colors">
+                      <td className="px-5 py-3 font-medium text-text-primary">{row.name}</td>
+                      <td className="px-5 py-3 text-text-secondary">
+                        {exists ? (
+                          <span className="text-yellow font-semibold">Update name</span>
+                        ) : (
+                          <span className="text-accent font-semibold">Create team</span>
+                        )}
                       </td>
                     </tr>
                   )

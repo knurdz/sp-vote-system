@@ -67,20 +67,20 @@ export function Home() {
 
   return (
     <PageWrapper>
-      <div className="relative z-10">
+      <div className="relative z-10 space-y-8">
         <header className="page-header">
-          <p className="font-mono text-[12px] tracking-[0.08em] text-accent">
-            PROJECT ALLOCATION
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-accent">
+            Project Allocation
           </p>
-          <h1 className="mt-2 text-[40px] font-bold leading-tight text-text-primary">
+          <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-text-primary sm:text-5xl md:text-6xl">
             Project Board
           </h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-text-secondary">
-            Browse industry projects and pick what your team wants to work on
+          <p className="mt-3 max-w-2xl text-[16px] leading-relaxed text-text-secondary">
+            Browse industry projects and pick what your team wants to work on. Active teams can vote once rounds open.
           </p>
         </header>
 
-        <div className="section-gap inline-flex flex-wrap gap-1 rounded-xl border border-border bg-bg-surface p-1">
+        <div className="inline-flex flex-wrap gap-1.5 rounded-2xl border border-border bg-bg-surface/60 backdrop-blur-md p-1.5 shadow-panel">
           {FILTERS.map((f) => {
             const count = counts[f.value]
             const active = filter === f.value
@@ -89,18 +89,18 @@ export function Home() {
                 key={f.value}
                 type="button"
                 onClick={() => setFilter(f.value)}
-                className={`flex min-h-11 cursor-pointer select-none items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-medium transition-all duration-150 active:scale-[0.98] ${
+                className={`flex min-h-10 cursor-pointer select-none items-center gap-2 rounded-xl px-4 py-2 text-[13px] font-display font-semibold transition-all duration-200 active:scale-[0.97] ${
                   active
-                    ? 'bg-accent text-black shadow-[0_0_16px_rgba(0,201,120,0.35)]'
+                    ? 'bg-accent text-black shadow-[0_4px_16px_var(--accent-glow)]'
                     : 'text-text-secondary hover:bg-bg-elevated hover:text-text-primary'
                 }`}
               >
                 {f.label}
                 <span
-                  className={`rounded-full px-1.5 py-0.5 text-[11px] ${
+                  className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold ${
                     active
-                      ? 'bg-black/20 text-black'
-                      : 'bg-accent-glow text-accent'
+                      ? 'bg-black/15 text-black'
+                      : 'bg-accent/8 text-accent border border-accent/20'
                   }`}
                 >
                   {count}

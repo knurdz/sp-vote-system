@@ -23,11 +23,11 @@ function GitHubIcon() {
 
 export function Footer() {
   return (
-    <footer className="mt-auto shrink-0 border-t border-border bg-bg-surface">
-      <div className="mx-auto grid max-w-page grid-cols-1 gap-8 px-4 py-8 sm:px-8 sm:py-10 md:grid-cols-3 md:gap-10">
+    <footer className="mt-auto shrink-0 border-t border-border/80 bg-bg-surface/50 backdrop-blur-md">
+      <div className="mx-auto grid max-w-page grid-cols-1 gap-8 px-6 py-10 sm:px-8 sm:py-12 md:grid-cols-3 md:gap-12">
         {/* Left — Powered by Knurdz */}
-        <div>
-          <p className="mb-3 text-[11px] uppercase tracking-widest text-text-muted">
+        <div className="space-y-3">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-text-muted">
             Powered by
           </p>
           <a
@@ -37,23 +37,23 @@ export function Footer() {
             className="inline-flex transition-opacity hover:opacity-80"
             aria-label="Knurdz — visit knurdz.org"
           >
-            <img src={knurdzLogo} alt="Knurdz" className="h-8 w-auto" />
+            <img src={knurdzLogo} alt="Knurdz" className="h-7 w-auto" />
           </a>
-          <p className="mt-3 max-w-[280px] text-[12px] leading-relaxed text-text-muted">
+          <p className="max-w-[280px] text-[13px] leading-relaxed text-text-muted">
             Engineering the future through code, hardware, and social
             innovation.
           </p>
         </div>
 
         {/* Center — Open source */}
-        <div>
-          <div className="mb-2 flex items-center gap-2">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
             <GitHubIcon />
-            <span className="text-[14px] font-semibold text-text-primary">
+            <span className="font-display text-[15px] font-bold text-text-primary">
               Open Source
             </span>
           </div>
-          <p className="mb-3 max-w-xs text-[12px] leading-relaxed text-text-muted">
+          <p className="max-w-xs text-[13px] leading-relaxed text-text-muted">
             This platform is open source so the allocation process stays
             transparent and auditable by everyone involved.
           </p>
@@ -61,25 +61,25 @@ export function Footer() {
             href={GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[13px] text-accent transition-colors hover:text-accent-hover hover:underline"
+            className="inline-block font-display text-[13px] font-semibold text-accent transition-colors hover:text-accent-hover hover:underline"
           >
             View on GitHub →
           </a>
         </div>
 
         {/* Right — Contact */}
-        <div className="md:text-right">
-          <p className="mb-3 text-[11px] uppercase tracking-widest text-text-muted">
+        <div className="space-y-3 md:text-right">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-text-muted">
             Contact
           </p>
-          <ul className="space-y-2">
+          <ul className="space-y-2.5">
             {CONTACTS.map(({ name, phone }) => (
-              <li key={name} className="text-[13px]">
-                <span className="text-text-primary">{name}</span>
-                <span className="mx-2 text-text-muted">·</span>
+              <li key={name} className="text-[13px] font-medium text-text-secondary">
+                <span>{name}</span>
+                <span className="mx-2 text-border">·</span>
                 <a
                   href={`tel:${phone}`}
-                  className="font-mono text-text-secondary transition-colors hover:text-accent"
+                  className="font-mono text-text-muted transition-colors hover:text-accent"
                 >
                   {phone}
                 </a>
@@ -89,9 +89,9 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-border">
-        <p className="mx-auto max-w-page px-4 py-4 text-[12px] text-text-muted sm:px-8">
-          © 2026
+      <div className="border-t border-border/80 py-4">
+        <p className="mx-auto max-w-page px-6 text-center font-mono text-[11px] text-text-muted sm:px-8 md:text-left">
+          © 2026 ProjAlloc. All rights reserved.
         </p>
       </div>
     </footer>
