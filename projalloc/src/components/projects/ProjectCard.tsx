@@ -1,3 +1,4 @@
+import { useRef, type MouseEvent, type PointerEvent, type TouchEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Countdown } from '@/components/ui/Countdown'
@@ -71,9 +72,79 @@ export function ProjectCard({
   const isSelfCol5 = index % 5 === 4
   const isSelfCol4 = index % 4 === 3
   const isSelfCol3 = index % 3 === 2
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+  const suppressClickRef = useRef(false)
+
+  const toggleMobileDetails = () => {
+    suppressClickRef.current = true
+
+    if (isHovered) {
+      onHoverEnd()
+    } else {
+      onHoverStart(index)
+    }
+  }
+
+  const isSwipe = (deltaX: number, deltaY: number) =>
+    Math.abs(deltaX) >= 42 && Math.abs(deltaX) > Math.abs(deltaY) * 1.15
+
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (window.innerWidth >= 640 || event.pointerType === 'touch') return
+
+    pointerStartRef.current = { x: event.clientX, y: event.clientY }
+    suppressClickRef.current = false
+  }
+
+  const handlePointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    const start = pointerStartRef.current
+    pointerStartRef.current = null
+
+    if (!start || window.innerWidth >= 640 || event.pointerType === 'touch') return
+
+    const deltaX = event.clientX - start.x
+    const deltaY = event.clientY - start.y
+
+    if (!isSwipe(deltaX, deltaY)) return
+
+    event.preventDefault()
+    toggleMobileDetails()
+  }
+
+  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (window.innerWidth >= 640) return
+
+    const touch = event.touches[0]
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
+    suppressClickRef.current = false
+  }
+
+  const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current
+    const touch = event.changedTouches[0]
+    touchStartRef.current = null
+
+    if (!start || !touch || window.innerWidth >= 640) return
+
+    const deltaX = touch.clientX - start.x
+    const deltaY = touch.clientY - start.y
+
+    if (!isSwipe(deltaX, deltaY)) return
+
+    event.preventDefault()
+    toggleMobileDetails()
+  }
+
+  const handleLinkClickCapture = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!suppressClickRef.current) return
+
+    event.preventDefault()
+    suppressClickRef.current = false
+  }
 
   return (
     <div
+      data-project-card-index={index}
       className={cn(
         "flip-card-container w-full relative",
         // Shifting classes for left neighbors of hovered last-column cards
@@ -87,9 +158,30 @@ export function ProjectCard({
         isHovered && isSelfCol3 && "md:expanded-card-left-3n lg:expanded-card-left-auto"
       )}
       onMouseLeave={onHoverEnd}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={() => {
+        pointerStartRef.current = null
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={() => {
+        touchStartRef.current = null
+      }}
     >
-      <div className="flip-card w-full h-full">
-        <Link to={`/project/${project.id}`} className="block w-full h-full relative">
+      <div
+        className={cn(
+          "flip-card w-full h-full card shadow-panel transition-all duration-300",
+          styles.border,
+          styles.hoverBorder,
+          styles.hoverShadow
+        )}
+      >
+        <Link
+          to={`/project/${project.id}`}
+          className="block w-full h-full relative"
+          onClickCapture={handleLinkClickCapture}
+        >
           {/* Hover hotspot trigger to prevent accidental edge-hovers from expanding card */}
           {!isHovered && (
             <div
@@ -102,10 +194,7 @@ export function ProjectCard({
             {/* FRONT FACE: Name and Company */}
             <div className="flip-card-front">
               <article
-                className={cn(
-                  'relative flex h-full flex-col justify-between overflow-hidden rounded-card border bg-bg-surface backdrop-blur-md shadow-panel p-4 sm:p-5 border-border transition-all duration-300',
-                  styles.border
-                )}
+                className="relative flex h-full flex-col justify-between overflow-hidden p-4 sm:p-5"
               >
                 {/* Colored top gradient line */}
                 <div
@@ -131,6 +220,10 @@ export function ProjectCard({
                     {project.title}
                   </h3>
                 </div>
+
+                <p className="sm:hidden text-center font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-text-muted">
+                  Slide for more details
+                </p>
   
               </article>
             </div>
@@ -138,12 +231,7 @@ export function ProjectCard({
             {/* BACK FACE: Detailed Information */}
             <div className="flip-card-back">
               <article
-                className={cn(
-                  'relative flex h-full flex-col justify-between overflow-hidden rounded-card border bg-bg-elevated backdrop-blur-md shadow-panel p-5 sm:p-6 border-border transition-all duration-300',
-                  styles.hoverBorder,
-                  styles.hoverShadow,
-                  styles.border
-                )}
+                className="relative flex h-full flex-col justify-between overflow-hidden p-5 sm:p-6"
               >
                 {/* Colored top gradient line */}
                 <div
@@ -169,7 +257,7 @@ export function ProjectCard({
                 </div>
 
                 {/* Description & Added Date */}
-                <div className="flex-1 text-center min-h-0 overflow-y-auto mb-4 scrollbar-thin flex flex-col items-center">
+                <div className="flex-1 text-center min-h-0 overflow-hidden mb-4 flex flex-col items-center">
                   <p className="text-[13px] leading-relaxed text-text-secondary mb-3">
                     {project.description}
                   </p>

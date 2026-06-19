@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import { ProjectList } from '@/components/projects/ProjectList'
-import { ProjectWheel } from '@/components/projects/ProjectWheel'
 import { useProjects } from '@/hooks/useProjects'
 import { useAuth } from '@/hooks/useAuth'
 import type { ProjectStatus } from '@/types'
@@ -44,18 +43,29 @@ const EMPTY_COPY: Record<
 
 export function Home() {
   const [filter, setFilter] = useState<ProjectStatus | 'all'>('all')
-  const [viewMode, setViewMode] = useState<'tile' | 'wheel'>(() => {
-    return (localStorage.getItem('projalloc_view_mode') as 'tile' | 'wheel') || 'wheel'
-  })
+  const [search, setSearch] = useState('')
   const { projects: allProjects, assignedTeams, loading, error } = useProjects('all')
   const { role } = useAuth()
 
   const projects = useMemo(
-    () =>
-      filter === 'all'
+    () => {
+      let filtered = filter === 'all'
         ? allProjects
-        : allProjects.filter((p) => p.status === filter),
-    [allProjects, filter],
+        : allProjects.filter((p) => p.status === filter)
+
+      if (search.trim()) {
+        const query = search.toLowerCase()
+        filtered = filtered.filter(
+          (p) =>
+            p.title.toLowerCase().includes(query) ||
+            p.company.toLowerCase().includes(query) ||
+            p.description.toLowerCase().includes(query) ||
+            p.tech_stack.some((tech) => tech.toLowerCase().includes(query))
+        )
+      }
+      return filtered
+    },
+    [allProjects, filter, search],
   )
 
   const counts = useMemo(
@@ -69,196 +79,109 @@ export function Home() {
     [allProjects],
   )
 
-  const handleViewModeChange = (mode: 'tile' | 'wheel') => {
-    setViewMode(mode)
-    localStorage.setItem('projalloc_view_mode', mode)
-  }
-
   return (
     <PageWrapper>
       <div className="relative z-10 space-y-8">
-        {/* View Switcher Toggle & Header Row */}
+        {/* Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
-          {viewMode === 'wheel' ? (
-            // Center top title format matching reference image
-            <header className="text-center w-full relative flex flex-col items-center">
-              <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-text-primary uppercase">
-                FITsp
-              </h1>
-              <p className="mt-1 font-display text-base sm:text-lg font-semibold tracking-wide text-text-secondary">
-                Project Wheel
-              </p>
-
-              {/* Filter Pills right below Project Wheel text */}
-              <div className="mt-4 sm:mt-5 flex justify-center relative z-20">
-                <div className="cir-tabs flex-wrap justify-center gap-1.5 p-1.5">
-                  {FILTERS.filter(f => f.value !== 'all').map((f) => {
-                    const count = counts[f.value]
-                    const active = filter === f.value
-                    const displayLabel = f.label === 'Open now' ? 'Open Now' : f.label === 'Coming soon' ? 'Coming Soon' : f.label
-                    const inputId = `filter-wheel-${f.value}`
-
-                    return (
-                      <div key={f.value} className="relative inline-flex items-center">
-                        <input
-                          type="radio"
-                          id={inputId}
-                          name="filter-wheel"
-                          className="cir-tabs__r"
-                          checked={active}
-                          onChange={() => setFilter(f.value)}
-                        />
-                        <label
-                          htmlFor={inputId}
-                          className="cir-tabs__t flex items-center gap-2"
-                        >
-                          <span>{displayLabel}</span>
-                          <span
-                            className={`flex h-5 w-5 items-center justify-center rounded-full font-mono text-[10px] font-bold border transition-colors ${
-                              active
-                                ? 'border-bg-base/30 bg-bg-base/10 text-bg-base'
-                                : 'border-text-muted/30 bg-bg-surface/50 text-text-muted'
-                            }`}
-                          >
-                            {count}
-                          </span>
-                        </label>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Absolute view toggler to remain clean on larger displays */}
-              <div className="absolute right-0 top-4 hidden sm:inline-flex rounded-xl border border-border bg-bg-surface/30 backdrop-blur-md p-0.5 shadow-panel">
-                <button
-                  type="button"
-                  onClick={() => handleViewModeChange('wheel')}
-                  className="cursor-pointer select-none rounded-lg px-3.5 py-1.5 text-xs font-display font-bold transition-all duration-200 bg-accent text-black shadow-sm"
-                >
-                  Wheel View
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleViewModeChange('tile')}
-                  className="cursor-pointer select-none rounded-lg px-3.5 py-1.5 text-xs font-display font-bold transition-all duration-200 text-text-secondary hover:text-text-primary"
-                >
-                  Grid View
-                </button>
-              </div>
-            </header>
-          ) : (
-            // Centered header for standard tile view
-            <header className="text-center w-full relative flex flex-col items-center">
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-accent hidden">
-                FITsp
-              </p>
-              <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-text-primary sm:text-5xl md:text-6xl">
-                Project Board
-              </h1>
-              <p className="mt-3 max-w-2xl text-[16px] leading-relaxed text-text-secondary">
-                Browse industry projects and pick what your team wants to work on. Active teams can vote once rounds open.
-              </p>
-
-              {/* Absolute view toggler to remain clean on larger displays */}
-              <div className="absolute right-0 top-4 hidden sm:inline-flex rounded-xl border border-border bg-bg-surface/30 backdrop-blur-md p-0.5 shadow-panel">
-                <button
-                  type="button"
-                  onClick={() => handleViewModeChange('wheel')}
-                  className="cursor-pointer select-none rounded-lg px-3.5 py-1.5 text-xs font-display font-bold transition-all duration-200 text-text-secondary hover:text-text-primary"
-                >
-                  Wheel View
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleViewModeChange('tile')}
-                  className="cursor-pointer select-none rounded-lg px-3.5 py-1.5 text-xs font-display font-bold transition-all duration-200 bg-accent text-black shadow-sm"
-                >
-                  Grid View
-                </button>
-              </div>
-            </header>
-          )}
+          <header className="text-center w-full relative flex flex-col items-center">
+            <h1 className="font-display text-4xl font-extrabold tracking-tight text-text-primary sm:text-5xl md:text-6xl">
+              Project Board
+            </h1>
+            <p className="mt-3 max-w-2xl text-[16px] leading-relaxed text-text-secondary">
+              Browse industry projects and pick what your team wants to work on. Active teams can vote once rounds open.
+            </p>
+          </header>
         </div>
 
-        {/* Mobile View Toggler for Wheel View */}
-        {viewMode === 'wheel' && (
-          <div className="flex sm:hidden justify-center w-full">
-            <div className="inline-flex rounded-xl border border-border bg-bg-surface/30 backdrop-blur-md p-0.5 shadow-panel">
-              <button
-                type="button"
-                onClick={() => handleViewModeChange('wheel')}
-                className="cursor-pointer select-none rounded-lg px-3.5 py-1.5 text-xs font-display font-bold transition-all duration-200 bg-accent text-black shadow-sm"
-              >
-                Wheel View
-              </button>
-              <button
-                type="button"
-                onClick={() => handleViewModeChange('tile')}
-                className="cursor-pointer select-none rounded-lg px-3.5 py-1.5 text-xs font-display font-bold transition-all duration-200 text-text-secondary hover:text-text-primary"
-              >
-                Grid View
-              </button>
+        {/* Controls Row: Left-aligned Filter Tabs & Right-aligned Search Bar */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-2">
+          {/* Left-aligned Filter Tabs */}
+          <div className="flex justify-start w-full md:w-auto">
+            <div className="cir-tabs flex-wrap justify-start gap-1.5 p-1.5">
+              {FILTERS.map((f) => {
+                const count = counts[f.value]
+                const active = filter === f.value
+                const inputId = `filter-board-${f.value}`
+
+                return (
+                  <div key={f.value} className="relative inline-flex items-center">
+                    <input
+                      type="radio"
+                      id={inputId}
+                      name="filter-board"
+                      className="cir-tabs__r"
+                      checked={active}
+                      onChange={() => setFilter(f.value)}
+                    />
+                    <label
+                      htmlFor={inputId}
+                      className="cir-tabs__t flex items-center gap-2"
+                    >
+                      <span>{f.label}</span>
+                      <span
+                        className={`flex h-5 w-5 items-center justify-center rounded-full font-mono text-[10px] font-bold border transition-colors ${
+                          active
+                            ? 'border-bg-base/30 bg-bg-base/10 text-bg-base'
+                            : 'border-text-muted/30 bg-bg-surface/50 text-text-muted'
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </label>
+                  </div>
+                )
+              })}
             </div>
           </div>
-        )}
 
-        {/* Conditional body content */}
-        {viewMode === 'wheel' ? (
-          <ProjectWheel
-            projects={projects}
-          />
-        ) : (
-          <>
-            <div className="flex justify-center w-full mb-8 mt-2">
-              <div className="cir-tabs flex-wrap justify-center gap-1.5 p-1.5">
-                {FILTERS.map((f) => {
-                  const count = counts[f.value]
-                  const active = filter === f.value
-                  const inputId = `filter-board-${f.value}`
-
-                  return (
-                    <div key={f.value} className="relative inline-flex items-center">
-                      <input
-                        type="radio"
-                        id={inputId}
-                        name="filter-board"
-                        className="cir-tabs__r"
-                        checked={active}
-                        onChange={() => setFilter(f.value)}
-                      />
-                      <label
-                        htmlFor={inputId}
-                        className="cir-tabs__t flex items-center gap-2"
-                      >
-                        <span>{f.label}</span>
-                        <span
-                          className={`flex h-5 w-5 items-center justify-center rounded-full font-mono text-[10px] font-bold border transition-colors ${
-                            active
-                              ? 'border-bg-base/30 bg-bg-base/10 text-bg-base'
-                              : 'border-text-muted/30 bg-bg-surface/50 text-text-muted'
-                          }`}
-                        >
-                          {count}
-                        </span>
-                      </label>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            <ProjectList
-              projects={projects}
-              loading={loading}
-              error={error}
-              emptyMessage={EMPTY_COPY[filter].message}
-              emptyDescription={EMPTY_COPY[filter].description}
-              assignedTeams={assignedTeams}
-              showAdminEmail={role === 'admin'}
+          {/* Right-aligned Search Bar */}
+          <div className="relative w-full md:w-80">
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="input-field input-field-focus pl-10 pr-10 py-2 w-full text-sm"
             />
-          </>
-        )}
+            {/* Search Glass Icon */}
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            {/* Clear Button if search has value */}
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+
+        <ProjectList
+          projects={projects}
+          loading={loading}
+          error={error}
+          emptyMessage={
+            search.trim()
+              ? 'No projects match your search'
+              : EMPTY_COPY[filter].message
+          }
+          emptyDescription={
+            search.trim()
+              ? 'Try checking for typos or searching a different term.'
+              : EMPTY_COPY[filter].description
+          }
+          assignedTeams={assignedTeams}
+          showAdminEmail={role === 'admin'}
+        />
       </div>
     </PageWrapper>
   )
