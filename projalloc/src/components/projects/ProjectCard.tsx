@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/Badge'
 import { Countdown } from '@/components/ui/Countdown'
-import { STATUS_LABELS, cn, truncate } from '@/lib/utils'
+import { STATUS_LABELS, cn } from '@/lib/utils'
 import type { AssignedTeamInfo, Project, ProjectStatus } from '@/types'
 
 interface ProjectCardProps {
@@ -9,6 +9,10 @@ interface ProjectCardProps {
   featured?: boolean
   assignedTeam?: AssignedTeamInfo
   showAdminEmail?: boolean
+  index: number
+  hoveredIndex: number | null
+  onHoverStart: (index: number) => void
+  onHoverEnd: () => void
 }
 
 const STATUS_STYLES: Record<
@@ -47,113 +51,181 @@ const STATUS_STYLES: Record<
 
 export function ProjectCard({
   project,
-  featured = false,
   assignedTeam,
-  showAdminEmail = false,
+  index,
+  hoveredIndex,
+  onHoverStart,
+  onHoverEnd,
 }: ProjectCardProps) {
   const isVoting = project.status === 'voting'
   const isAssigned = project.status === 'assigned'
   const styles = STATUS_STYLES[project.status]
 
-  return (
-    <Link to={`/project/${project.id}`} className="group block h-full">
-      <article
-        className={cn(
-          'relative flex h-full flex-col overflow-hidden rounded-card border border-border bg-bg-surface backdrop-blur-md shadow-panel transition-all duration-300 cubic-bezier(0.4, 0, 0.2, 1)',
-          'hover:-translate-y-1',
-          styles.hoverBorder,
-          styles.hoverShadow,
-          styles.border,
-        )}
-      >
-        <div
-          className={cn('h-1.5 w-full bg-gradient-to-r', styles.top)}
-          aria-hidden
-        />
+  // Shifting helper logic for when the last card in a row is expanded
+  const isHovered = hoveredIndex === index
+  const isLeftNeighbor = hoveredIndex !== null && index === hoveredIndex - 1
+  const isHoveredCol5 = hoveredIndex !== null && hoveredIndex % 5 === 4
+  const isHoveredCol4 = hoveredIndex !== null && hoveredIndex % 4 === 3
+  const isHoveredCol3 = hoveredIndex !== null && hoveredIndex % 3 === 2
 
-        <div className="flex flex-1 flex-col p-5 sm:p-6">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-text-muted">
-                {project.company}
-              </p>
-              <h3
+  const isSelfCol5 = index % 5 === 4
+  const isSelfCol4 = index % 4 === 3
+  const isSelfCol3 = index % 3 === 2
+
+  return (
+    <div
+      className={cn(
+        "flip-card-container w-full relative",
+        // Shifting classes for left neighbors of hovered last-column cards
+        isLeftNeighbor && isHoveredCol5 && "xl:shift-col-1",
+        isLeftNeighbor && isHoveredCol4 && "lg:shift-col-1 xl:col-start-auto",
+        isLeftNeighbor && isHoveredCol3 && "md:shift-col-1 lg:col-start-auto",
+        // Expansion classes for the hovered card itself
+        isHovered && "expanded-card is-hovered",
+        isHovered && isSelfCol5 && "xl:expanded-card-left-5n",
+        isHovered && isSelfCol4 && "lg:expanded-card-left-4n xl:expanded-card-left-auto",
+        isHovered && isSelfCol3 && "md:expanded-card-left-3n lg:expanded-card-left-auto"
+      )}
+      onMouseLeave={onHoverEnd}
+    >
+      <div className="flip-card w-full h-full">
+        <Link to={`/project/${project.id}`} className="block w-full h-full relative">
+          {/* Hover hotspot trigger to prevent accidental edge-hovers from expanding card */}
+          {!isHovered && (
+            <div
+              className="absolute inset-0 m-auto w-[55%] h-[55%] z-30"
+              onMouseEnter={() => onHoverStart(index)}
+            />
+          )}
+          <div className="flip-card-inner">
+            
+            {/* FRONT FACE: Name and Company */}
+            <div className="flip-card-front">
+              <article
                 className={cn(
-                  'mt-2 font-display font-bold leading-snug text-text-primary transition-colors',
-                  styles.hoverTitle,
-                  featured ? 'text-[20px] sm:text-[22px] tracking-tight' : 'text-[17px] sm:text-[18px]',
+                  'relative flex h-full flex-col justify-between overflow-hidden rounded-card border bg-bg-surface backdrop-blur-md shadow-panel p-4 sm:p-5 border-border transition-all duration-300',
+                  styles.border
                 )}
               >
-                {project.title}
-              </h3>
+                {/* Colored top gradient line */}
+                <div
+                  className={cn('absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r', styles.top)}
+                  aria-hidden
+                />
+  
+                {/* Top Row: Company */}
+                <div className="flex items-center justify-center gap-3 w-full mt-1.5">
+                  <p className="font-mono text-[9.5px] font-bold uppercase tracking-[0.15em] text-text-muted truncate flex-1 text-center">
+                    {project.company}
+                  </p>
+                </div>
+  
+                {/* Title Center */}
+                <div className="flex-1 flex flex-col justify-center my-2 text-center">
+                  <h3
+                    className={cn(
+                      'font-display font-bold leading-snug text-text-primary tracking-tight text-center uppercase text-[15px] sm:text-[16px] line-clamp-3',
+                      styles.hoverTitle
+                    )}
+                  >
+                    {project.title}
+                  </h3>
+                </div>
+  
+              </article>
             </div>
-            <Badge variant={project.status} className="shrink-0">
-              {STATUS_LABELS[project.status]}
-            </Badge>
-          </div>
-
-          {(featured || project.description) && (
-            <p className="mt-3 line-clamp-3 text-[13.5px] leading-relaxed text-text-secondary">
-              {truncate(project.description, featured ? 160 : 100)}
-            </p>
-          )}
-
-          {project.tech_stack.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {project.tech_stack.slice(0, featured ? 5 : 3).map((tech) => (
-                <span
-                  key={tech}
-                  className="rounded-md border border-border/70 bg-bg-elevated/40 px-2 py-0.5 font-mono text-[10px] text-text-secondary"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-auto pt-5 sm:pt-6">
-            <div className="flex flex-col gap-2 rounded-2xl border border-border/50 bg-bg-elevated/30 px-3.5 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-              {isAssigned && assignedTeam ? (
-                <div className="text-[12px] text-text-secondary">
-                  <span className="text-text-muted">Assigned: </span>
-                  <span className="font-display font-bold text-accent">{assignedTeam.name}</span>
-                  {showAdminEmail && assignedTeam.leaderEmail && (
-                    <p className="mt-0.5 font-mono text-[10px] text-text-muted">
-                      {assignedTeam.leaderEmail}
+  
+            {/* BACK FACE: Detailed Information */}
+            <div className="flip-card-back">
+              <article
+                className={cn(
+                  'relative flex h-full flex-col justify-between overflow-hidden rounded-card border bg-bg-elevated backdrop-blur-md shadow-panel p-5 sm:p-6 border-border transition-all duration-300',
+                  styles.hoverBorder,
+                  styles.hoverShadow,
+                  styles.border
+                )}
+              >
+                {/* Colored top gradient line */}
+                <div
+                  className={cn('absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r', styles.top)}
+                  aria-hidden
+                />
+  
+                {/* Header & Title */}
+                <div className="relative flex flex-col items-center">
+                  <div className="flex items-center justify-center w-full mt-1">
+                    <p className="font-mono text-[9.5px] font-bold uppercase tracking-[0.15em] text-text-muted truncate text-center w-full px-12">
+                      {project.company}
                     </p>
+                    <Badge variant={project.status} className="shrink-0 scale-90 absolute right-0 top-0 origin-top-right">
+                      {STATUS_LABELS[project.status]}
+                    </Badge>
+                  </div>
+                  
+                  <h4 className="font-display font-black leading-tight text-text-primary tracking-tight text-center uppercase text-[17px] sm:text-[19px] mt-3">
+                    {project.title}
+                  </h4>
+                  <div className="w-10 h-0.5 bg-accent/40 rounded mt-2.5 mb-3.5 mx-auto" />
+                </div>
+
+                {/* Description & Added Date */}
+                <div className="flex-1 text-center min-h-0 overflow-y-auto mb-4 scrollbar-thin flex flex-col items-center">
+                  <p className="text-[13px] leading-relaxed text-text-secondary mb-3">
+                    {project.description}
+                  </p>
+                  
+                  <div className="flex items-center justify-center gap-1.5 text-[10px] text-text-muted">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Added {new Date(project.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                  </div>
+                </div>
+  
+                <div className="space-y-3.5">
+                  {/* Tech Stack */}
+                  {project.tech_stack.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 justify-center">
+                      {project.tech_stack.map((tech) => (
+                        <span
+                          key={tech}
+                          className="rounded-md border border-border bg-bg-surface/60 px-2.5 py-0.5 font-mono text-[9.5px] text-text-secondary hover:border-accent/30 transition-colors"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+    
+                  {/* Bottom metadata panel */}
+                  {((isAssigned && assignedTeam) || isVoting) && (
+                    <div className="w-full">
+                      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-bg-surface/30 px-3.5 py-2 w-full text-[11px] text-text-secondary">
+                        {isAssigned && assignedTeam ? (
+                          <div className="truncate flex-1 text-left">
+                            <span className="text-text-muted">Assigned: </span>
+                            <span className="font-display font-bold text-accent">{assignedTeam.name}</span>
+                          </div>
+                        ) : (
+                          <div className="flex-1" />
+                        )}
+    
+                        {isVoting && (
+                          <Countdown
+                            deadline={project.voting_deadline}
+                            className="w-fit rounded-lg bg-accent/8 border border-accent/15 px-2 py-0.5 font-mono text-[10px] font-bold text-accent shrink-0"
+                          />
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
-              ) : (
-                <div className="flex items-center gap-2 text-[12px] text-text-secondary">
-                  <svg
-                    className="h-4 w-4 shrink-0 text-text-muted"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    aria-hidden
-                  >
-                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-                  </svg>
-                  <span>
-                    Team size:{' '}
-                    <span className="font-display font-bold text-text-primary">{project.team_size}</span>
-                  </span>
-                </div>
-              )}
-
-              {isVoting && (
-                <Countdown
-                  deadline={project.voting_deadline}
-                  className="w-fit rounded-lg bg-accent/8 border border-accent/15 px-2.5 py-0.5 font-mono text-[11px] font-bold text-accent"
-                />
-              )}
+              </article>
             </div>
+  
           </div>
-        </div>
-      </article>
-    </Link>
+        </Link>
+      </div>
+    </div>
   )
 }

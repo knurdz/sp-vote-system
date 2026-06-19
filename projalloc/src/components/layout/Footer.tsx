@@ -94,7 +94,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-border/30 py-4">
+      <div className="border-t border-border/30 py-4 pb-24 xl:pb-4">
         <p className="mx-auto max-w-page px-6 text-center font-mono text-[11px] text-text-muted sm:px-8 md:text-left">
           © 2026 FITsp. All rights reserved.
         </p>

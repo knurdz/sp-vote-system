@@ -5,6 +5,7 @@ export default {
     extend: {
       colors: {
         'bg-base': 'var(--bg-base)',
+        'bg-header': 'var(--bg-header)',
         'bg-surface': 'var(--bg-surface)',
         'bg-elevated': 'var(--bg-elevated)',
         border: 'var(--border)',

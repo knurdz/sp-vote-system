@@ -69,8 +69,8 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-4 z-40 mx-4 shrink-0 rounded-2xl border border-border bg-bg-surface/70 shadow-panel backdrop-blur-lg sm:mx-8 xl:mx-auto max-w-page">
-        <nav className="flex h-16 items-center justify-between gap-4 px-4 sm:px-6">
+      <header className="sticky top-0 z-40 w-full shrink-0 border-b border-border bg-bg-header/70 shadow-panel backdrop-blur-lg">
+        <nav className="mx-auto flex h-16 w-full max-w-page items-center justify-between gap-4 px-4 sm:px-8">
           <div className="flex min-w-0 items-center gap-3 sm:gap-6">
             <div className="shrink-0">
               <Wordmark />
@@ -161,7 +161,7 @@ export function Navbar() {
       </header>
 
       {/* Floating Bottom Navigation (Only visible on mobile/tablet screens < 1280px / xl) */}
-      <div className="xl:hidden fixed bottom-6 left-4 right-4 z-50 flex items-center justify-around rounded-2xl border border-border bg-bg-surface/85 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.18)] backdrop-blur-lg">
+      <div className="xl:hidden fixed bottom-6 left-4 right-4 z-50 flex items-center justify-around rounded-2xl border border-border bg-bg-header/85 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.18)] backdrop-blur-lg">
         {visibleNavItems.map(({ to, label, match, icon }) => {
           const active = match(pathname)
           return (

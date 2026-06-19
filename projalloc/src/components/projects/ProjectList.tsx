@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { ProjectCard } from './ProjectCard'
 import { Alert } from '@/components/ui/Alert'
 import { ProjectCardSkeleton } from '@/components/ui/Skeleton'
@@ -41,6 +41,7 @@ export function ProjectList({
   showAdminEmail = false,
 }: ProjectListProps) {
   const sorted = useMemo(() => sortProjectsByStatus(projects), [projects])
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   if (loading) {
     return (
@@ -67,14 +68,18 @@ export function ProjectList({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {sorted.map((project) => (
+    <div className="grid grid-cols-1 grid-flow-row-dense gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      {sorted.map((project, index) => (
         <ProjectCard
           key={project.id}
           project={project}
           featured={project.status === 'voting'}
           assignedTeam={assignedTeams[project.id]}
           showAdminEmail={showAdminEmail}
+          index={index}
+          hoveredIndex={hoveredIndex}
+          onHoverStart={setHoveredIndex}
+          onHoverEnd={() => setHoveredIndex(null)}
         />
       ))}
     </div>
