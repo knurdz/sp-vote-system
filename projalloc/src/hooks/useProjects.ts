@@ -34,6 +34,15 @@ async function fetchAssignedTeams(
   return map
 }
 
+// Load local dummy projects if they exist (gitignored)
+const localDummyFiles = import.meta.glob('../local-dummy-projects.*', { eager: true })
+const dummyProjects: Project[] = []
+Object.values(localDummyFiles).forEach((mod: any) => {
+  if (mod && (mod as any).dummyProjects) {
+    dummyProjects.push(...(mod as any).dummyProjects)
+  }
+})
+
 export function useProjects(filter?: ProjectStatus | 'all') {
   const [projects, setProjects] = useState<Project[]>([])
   const [assignedTeams, setAssignedTeams] = useState<Record<string, AssignedTeamInfo>>({})
@@ -57,10 +66,12 @@ export function useProjects(filter?: ProjectStatus | 'all') {
       status: getEffectiveStatus(p),
     }))
 
+    const allMerged = [...normalized, ...dummyProjects]
+
     const filtered =
       filter && filter !== 'all'
-        ? normalized.filter((p) => p.status === filter)
-        : normalized
+        ? allMerged.filter((p) => p.status === filter)
+        : allMerged
 
     setProjects(filtered)
     setAssignedTeams(await fetchAssignedTeams(normalized))
@@ -80,6 +91,15 @@ export function useProject(id: string | undefined) {
 
   const fetchProject = useCallback(async () => {
     if (!id) return
+
+    const dummy = dummyProjects.find((p) => p.id === id)
+    if (dummy) {
+      setProject(dummy)
+      setError(null)
+      setLoading(false)
+      return
+    }
+
     const { data, error: err } = await supabase
       .from('projects')
       .select('*')
