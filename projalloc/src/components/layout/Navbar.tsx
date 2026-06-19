@@ -160,27 +160,28 @@ export function Navbar() {
         </nav>
       </header>
 
-      {/* Floating Bottom Navigation (Only visible on mobile/tablet screens < 1280px / xl) */}
-      <div className="xl:hidden fixed bottom-6 left-4 right-4 z-50 flex items-center justify-around rounded-2xl border border-border bg-bg-header/85 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.18)] backdrop-blur-lg">
-        {visibleNavItems.map(({ to, label, match, icon }) => {
-          const active = match(pathname)
-          return (
-            <Link
-              key={to}
-              to={to}
-              className={cn(
-                'flex flex-col items-center justify-center gap-0.5 flex-1 rounded-xl py-1 text-[10px] font-display font-bold transition-all duration-200 active:scale-[0.95]',
-                active
-                  ? 'text-accent bg-accent/8'
-                  : 'text-text-secondary hover:text-text-primary',
-              )}
-            >
-              <div className="p-0.5">{icon}</div>
-              <span className="font-semibold text-[10px] tracking-wide">{label}</span>
-            </Link>
-          )
-        })}
-      </div>
+      {pathname !== '/login' && (
+        <div className="xl:hidden fixed bottom-6 left-4 right-4 z-50 flex items-center justify-around rounded-2xl border border-border bg-bg-header/85 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.18)] backdrop-blur-lg">
+          {visibleNavItems.map(({ to, label, match, icon }) => {
+            const active = match(pathname)
+            return (
+              <Link
+                key={to}
+                to={to}
+                className={cn(
+                  'flex flex-col items-center justify-center gap-0.5 flex-1 rounded-xl py-1 text-[10px] font-display font-bold transition-all duration-200 active:scale-[0.95]',
+                  active
+                    ? 'text-accent bg-accent/8'
+                    : 'text-text-secondary hover:text-text-primary',
+                )}
+              >
+                <div className="p-0.5">{icon}</div>
+                <span className="font-semibold text-[10px] tracking-wide">{label}</span>
+              </Link>
+            )
+          })}
+        </div>
+      )}
     </>
   )
 }

@@ -24,6 +24,9 @@ export default {
         'status-closed': 'var(--status-closed)',
         'status-assigned': 'var(--status-assigned)',
       },
+      backgroundImage: {
+        'theme-bg': 'var(--bg-image)',
+      },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
         display: ['Outfit', 'system-ui', 'sans-serif'],

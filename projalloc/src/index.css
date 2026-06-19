@@ -17,17 +17,20 @@
   --primary-900: 158 64% 22%;
   --primary-950: 158 64% 14%;
 
+  /* Background Image (Dark Forest Starry Sky) */
+  --bg-image: url('./assets/dark-bg.jpg');
+
   /* Dark Theme Semantics (Dark Forest Theme) */
   --bg-base: #07120D;
-  --bg-header: #091810;
-  --bg-surface: #10251A;
-  --bg-elevated: #153522;
-  --border: rgba(54, 242, 161, 0.15); /* Based on Primary accent */
+  --bg-header: rgba(17, 25, 40, 0.11);
+  --bg-surface: rgba(17, 25, 40, 0.11);
+  --bg-elevated: rgba(17, 25, 40, 0.11);
+  --border: rgba(255, 255, 255, 0.125);
   --accent: #36F2A1;
   --accent-hover: #6EE7B7;
   --accent-glow: rgba(54, 242, 161, 0.12);
   --text-primary: #F2FFF7;
-  --text-secondary: #C5E0D0;
+  --text-secondary: #DDF2E6;
   --text-muted: #9AB5A6;
   --green: #36F2A1;
   --yellow: #F4D35E;
@@ -38,19 +41,37 @@
   --status-closed: #FF6B6B;
   --status-assigned: #38D5FF;
 
+  /* Card Glassmorphism Variables */
+  --card-bg: rgba(17, 25, 40, 0.11);
+  --card-border: rgba(255, 255, 255, 0.125);
+  --card-backdrop-filter: blur(14px) saturate(63%);
+
   /* Ambient Details & Shadows */
   --page-glow-color: rgba(52, 211, 153, 0.05);
   --side-glow-green: rgba(163, 230, 53, 0.06);
   --side-glow-blue: rgba(52, 211, 153, 0.04);
   --side-glow-fade: rgba(52, 211, 153, 0.01);
   --grid-color: rgba(110, 231, 183, 0.025);
-  --panel-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.04);
+  --panel-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* shadow-lg */
   color-scheme: dark;
 }
 
+/* Glassmorphism card effect */
+.card {
+    backdrop-filter: var(--card-backdrop-filter);
+    -webkit-backdrop-filter: var(--card-backdrop-filter);
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+}
+
 [data-theme='light'] {
+  /* Background Image */
+  --bg-image: url('./assets/light-bg.jpg');
+
   /* Light Theme Semantics (Clean cool grays + White frosted glass) */
   --bg-base: #f1f5f9;
+  --bg-header: rgba(255, 255, 255, 0.5);
   --bg-surface: rgba(255, 255, 255, 0.75);
   --bg-elevated: rgba(241, 245, 249, 0.85);
   --border: rgba(15, 23, 42, 0.08);
@@ -77,6 +98,11 @@
   --grid-color: rgba(15, 23, 42, 0.025);
   --panel-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.05), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5);
   color-scheme: light;
+
+  /* Card Glassmorphism Variables */
+  --card-bg: rgba(255, 255, 255, 0.55);
+  --card-border: rgba(15, 23, 42, 0.08);
+  --card-backdrop-filter: blur(14px) saturate(120%);
 }
 
 @theme {
@@ -420,6 +446,9 @@ input[type="range"]::-moz-range-thumb:hover {
   color: var(--text-primary);
 }
 
+
+
+
 .cir-tabs__r:checked + .cir-tabs__t {
   background: var(--text-primary);
   color: var(--bg-base);
@@ -432,7 +461,7 @@ input[type="range"]::-moz-range-thumb:hover {
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-/* 3D Flip Card Styles */
+/* Expanding project card reveal */
 .flip-card-container {
   display: block;
   grid-column: span 1;
@@ -441,8 +470,8 @@ input[type="range"]::-moz-range-thumb:hover {
   position: relative;
   z-index: 1;
   transition:
-    height 0.6s cubic-bezier(0.25, 1, 0.5, 1),
-    z-index 0s 0.6s;
+    height 0.48s cubic-bezier(0.16, 1, 0.3, 1),
+    z-index 0s 0.48s;
 }
 
 /* Grid shifting utilities */
@@ -471,7 +500,9 @@ input[type="range"]::-moz-range-thumb:hover {
 /* React state-based card expansion */
 .expanded-card {
   z-index: 10;
-  transition: z-index 0s;
+  transition:
+    height 0.48s cubic-bezier(0.16, 1, 0.3, 1),
+    z-index 0s;
   grid-row: span 2;
   height: calc(380px + 1.25rem);
 }
@@ -525,27 +556,25 @@ input[type="range"]::-moz-range-thumb:hover {
 
 .flip-card {
   background-color: transparent;
-  perspective: 1000px;
-  width: 92%;
+  width: 100%;
   margin: 0 auto;
   height: 100%;
-  transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  border-radius: 28px;
+  transform: scaleX(0.92) translateZ(0);
+  transform-origin: center;
+  touch-action: pan-y;
+  transition: transform 0.48s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
 
 .flip-card-container.is-hovered .flip-card {
-  width: 100%;
+  transform: scaleX(1) translateZ(0);
 }
 
 .flip-card-inner {
   position: relative;
   width: 100%;
   height: 100%;
-  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-  transform-style: preserve-3d;
-}
-
-.flip-card-container.is-hovered .flip-card-inner {
-  transform: rotateY(180deg);
 }
 
 .flip-card-front,
@@ -555,13 +584,50 @@ input[type="range"]::-moz-range-thumb:hover {
   left: 0;
   width: 100%;
   height: 100%;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  border-radius: 20px;
+  border-radius: 28px;
+  transform: translateZ(0);
+  will-change: transform, visibility;
+}
+
+.flip-card-front {
+  z-index: 2;
+  visibility: visible;
+  transition: visibility 0s 0.24s;
 }
 
 .flip-card-back {
-  transform: rotateY(180deg);
+  z-index: 1;
+  visibility: hidden;
+  transform: scale(0.96) translateZ(0);
+  transform-origin: center;
+  transition:
+    transform 0.48s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s 0.24s;
+}
+
+.flip-card-container.is-hovered .flip-card-front {
+  visibility: hidden;
+  transition: visibility 0s;
+}
+
+.flip-card-container.is-hovered .flip-card-back {
+  visibility: visible;
+  transform: scale(1) translateZ(0);
+  transition:
+    transform 0.48s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s;
+}
+
+@media (max-width: 639px) {
+  .flip-card-front,
+  .flip-card-back {
+    transition: visibility 0s;
+  }
+
+  .flip-card-container.is-hovered .flip-card-front,
+  .flip-card-container.is-hovered .flip-card-back {
+    transition: visibility 0s;
+  }
 }
 
 
