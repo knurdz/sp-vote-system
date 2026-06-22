@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { truncate } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 
@@ -26,6 +26,7 @@ function segmentTextColor(hex: string) {
 interface SpinWheelProps {
   candidates: { id: string; name: string }[]
   onSpinComplete: (winner: { id: string; name: string }) => void
+  onSpinStart: () => Promise<{ id: string; name: string }>
   disabled?: boolean
   size?: number
   compact?: boolean
@@ -34,6 +35,7 @@ interface SpinWheelProps {
 export function SpinWheel({
   candidates,
   onSpinComplete,
+  onSpinStart,
   disabled,
   size = 560,
   compact = false,
@@ -49,7 +51,7 @@ export function SpinWheel({
   const fontSize = Math.max(11, Math.round(size * 0.032))
   const pointer = Math.round(size * 0.045)
 
-  const drawWheel = (rotation: number) => {
+  const drawWheel = useCallback((rotation: number) => {
     const canvas = canvasRef.current
     if (!canvas || candidates.length === 0) return
 
@@ -124,17 +126,32 @@ export function SpinWheel({
     ctx.arc(center, center, hubRadius * 0.35, 0, 2 * Math.PI)
     ctx.fillStyle = '#00C978'
     ctx.fill()
-  }
+  }, [candidates, center, fontSize, hubRadius, radius, size])
 
   useEffect(() => {
     drawWheel(rotationRef.current)
-  }, [candidates, size])
+  }, [drawWheel])
 
-  const spin = () => {
+  const spin = async () => {
     if (spinning || disabled || candidates.length === 0) return
 
-    const winnerIndex = Math.floor(Math.random() * candidates.length)
-    const winner = candidates[winnerIndex]
+    setSpinning(true)
+
+    let winner: { id: string; name: string }
+    try {
+      winner = await onSpinStart()
+    } catch {
+      setSpinning(false)
+      return
+    }
+
+    const winnerIndex = candidates.findIndex((candidate) => candidate.id === winner.id)
+    if (winnerIndex < 0) {
+      setSpinning(false)
+      onSpinComplete(winner)
+      return
+    }
+
     const slice = (2 * Math.PI) / candidates.length
 
     const targetRotation =
@@ -144,8 +161,6 @@ export function SpinWheel({
     const delta = targetRotation - startRotation
     const duration = 4500
     const startTime = performance.now()
-
-    setSpinning(true)
 
     const animate = (now: number) => {
       const elapsed = now - startTime
@@ -198,7 +213,7 @@ export function SpinWheel({
       <Button
         size={compact ? 'md' : 'lg'}
         disabled={spinning || disabled}
-        onClick={spin}
+        onClick={() => void spin()}
         className={compact ? 'mt-4 min-w-[160px]' : 'mt-6 min-w-[200px]'}
       >
         {spinning ? 'Spinning…' : 'Spin the Wheel'}

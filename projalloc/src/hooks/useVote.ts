@@ -52,6 +52,7 @@ async function teamHasVoteOnProject(projectId: string, teamId: string): Promise<
 
 export function useVote(projectId: string | undefined) {
   const { user, role, loading: authLoading } = useAuth()
+  const userEmail = user?.email
   const [hasVoted, setHasVoted] = useState(false)
   const [voteId, setVoteId] = useState<string | null>(null)
   const [teamId, setTeamId] = useState<string | null>(null)
@@ -63,7 +64,7 @@ export function useVote(projectId: string | undefined) {
   const fetchVoteState = useCallback(async () => {
     if (authLoading) return
 
-    if (!projectId || !user?.email || role !== 'leader') {
+    if (!projectId || !userEmail || role !== 'leader') {
       setLoading(false)
       return
     }
@@ -71,7 +72,7 @@ export function useVote(projectId: string | undefined) {
     const { data: team, error: teamErr } = await supabase
       .from('teams')
       .select('id')
-      .eq('leader_email', user.email)
+      .eq('leader_email', userEmail)
       .single()
 
     if (teamErr || !team) {
@@ -100,12 +101,12 @@ export function useVote(projectId: string | undefined) {
     setHasVoted(!!vote)
     setVoteId(vote?.id ?? null)
     setLoading(false)
-  }, [projectId, user?.email, role, authLoading])
+  }, [projectId, userEmail, role, authLoading])
 
-  usePolling(fetchVoteState, [projectId, user?.email, role, authLoading])
+  usePolling(fetchVoteState, [projectId, userEmail, role, authLoading])
 
   const vote = useCallback(async () => {
-    if (!projectId || !user?.email || !teamId || assignment) return
+    if (!projectId || !userEmail || !teamId || assignment) return
     setActionLoading(true)
     setError(null)
 
@@ -127,7 +128,7 @@ export function useVote(projectId: string | undefined) {
     const { error: err } = await supabase.from('votes').insert({
       project_id: projectId,
       team_id: teamId,
-      leader_email: user.email,
+      leader_email: userEmail,
     })
 
     setActionLoading(false)
@@ -136,7 +137,7 @@ export function useVote(projectId: string | undefined) {
       return
     }
     await fetchVoteState()
-  }, [projectId, user?.email, teamId, assignment, fetchVoteState])
+  }, [projectId, userEmail, teamId, assignment, fetchVoteState])
 
   const withdraw = useCallback(async () => {
     if (!voteId || !projectId) return
