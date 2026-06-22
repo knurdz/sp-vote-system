@@ -153,7 +153,9 @@ export function Navbar() {
               </div>
             ) : (
               <Link to="/login">
-                <Button size="sm">Sign in</Button>
+                <Button size="sm" className="min-h-11 px-4">
+                  Sign in
+                </Button>
               </Link>
             )}
           </div>

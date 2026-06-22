@@ -3,7 +3,10 @@ import { POLL_INTERVAL_MS } from '@/lib/utils'
 
 export function usePolling(callback: () => void | Promise<void>, deps: unknown[] = []) {
   const callbackRef = useRef(callback)
-  callbackRef.current = callback
+
+  useEffect(() => {
+    callbackRef.current = callback
+  }, [callback])
 
   useEffect(() => {
     void callbackRef.current()

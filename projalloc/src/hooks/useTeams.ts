@@ -31,11 +31,10 @@ export function useTeams() {
 }
 
 export function useUserTeam(email: string | undefined, role: Role | null) {
-  const [team, setTeam] = useState<Team | null>(null)
+  const [teamState, setTeamState] = useState<{ email: string; team: Team | null } | null>(null)
 
   useEffect(() => {
     if (!email || role !== 'leader') {
-      setTeam(null)
       return
     }
 
@@ -47,7 +46,7 @@ export function useUserTeam(email: string | undefined, role: Role | null) {
       .eq('leader_email', email)
       .maybeSingle()
       .then(({ data }) => {
-        if (mounted) setTeam((data as Team | null) ?? null)
+        if (mounted) setTeamState({ email, team: (data as Team | null) ?? null })
       })
 
     return () => {
@@ -55,7 +54,8 @@ export function useUserTeam(email: string | undefined, role: Role | null) {
     }
   }, [email, role])
 
-  return team
+  if (!email || role !== 'leader' || teamState?.email !== email) return null
+  return teamState.team
 }
 
 export async function teamHasVotes(teamId: string) {

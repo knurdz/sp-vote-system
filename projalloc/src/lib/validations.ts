@@ -7,7 +7,7 @@ const techStackTagSchema = z
   .trim()
   .min(1)
   .max(30)
-  .regex(/^[a-zA-Z0-9.\-]+$/, 'Tags may only contain letters, numbers, hyphens, and dots')
+  .regex(/^[a-zA-Z0-9.-]+$/, 'Tags may only contain letters, numbers, hyphens, and dots')
 
 export const projectSchema = z
   .object({

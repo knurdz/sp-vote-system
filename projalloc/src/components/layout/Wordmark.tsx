@@ -50,7 +50,7 @@ export function Wordmark({ className = '', asLink = true }: WordmarkProps) {
 
   if (asLink) {
     return (
-      <Link to="/" className="group inline-block transition-opacity hover:opacity-95">
+      <Link to="/" className="group inline-flex min-h-11 items-center transition-opacity hover:opacity-95">
         {content}
       </Link>
     )
