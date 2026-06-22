@@ -3,7 +3,7 @@ CREATE TABLE admin_emails (
   email TEXT PRIMARY KEY
 );
 
-INSERT INTO admin_emails (email) VALUES ('thesarupraneeth@gmail.com');
+INSERT INTO admin_emails (email) VALUES ('thesarupraneeth@gmail.com'), ('kaveeshaginodh1@gmail.com');
 
 -- Profiles (auto-created on first login via trigger)
 CREATE TABLE profiles (
