@@ -34,14 +34,26 @@ async function fetchAssignedTeams(
   return map
 }
 
-// Load local dummy projects if they exist (gitignored)
-const localDummyFiles = import.meta.glob('../local-dummy-projects.*', { eager: true })
+interface DummyProjectsModule {
+  dummyProjects?: Project[]
+}
+
+// Load local dummy projects in dev only. The file is gitignored and must never
+// be pulled into production bundles.
 const dummyProjects: Project[] = []
-Object.values(localDummyFiles).forEach((mod: any) => {
-  if (mod && (mod as any).dummyProjects) {
-    dummyProjects.push(...(mod as any).dummyProjects)
-  }
-})
+
+if (import.meta.env.DEV) {
+  const localDummyFiles = import.meta.glob<DummyProjectsModule>(
+    '../local-dummy-projects.*',
+    { eager: true },
+  )
+
+  Object.values(localDummyFiles).forEach((mod) => {
+    if (Array.isArray(mod.dummyProjects)) {
+      dummyProjects.push(...mod.dummyProjects)
+    }
+  })
+}
 
 export function useProjects(filter?: ProjectStatus | 'all') {
   const [projects, setProjects] = useState<Project[]>([])

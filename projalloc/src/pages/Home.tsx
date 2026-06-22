@@ -142,7 +142,7 @@ export function Home() {
               placeholder="Search projects..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="input-field input-field-focus pl-10 pr-10 py-2 w-full text-sm"
+              className="input-field input-field-focus min-h-11 w-full py-2 pl-10 pr-10 text-sm"
             />
             {/* Search Glass Icon */}
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
@@ -155,7 +155,8 @@ export function Home() {
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+                className="absolute inset-y-0 right-0 flex min-w-11 cursor-pointer items-center justify-center text-text-muted transition-colors hover:text-text-primary"
+                aria-label="Clear search"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

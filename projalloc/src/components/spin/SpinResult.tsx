@@ -10,9 +10,19 @@ interface SpinResultProps {
   onConfirm: () => void
   loading?: boolean
   error?: string | null
+  description?: string
+  confirmLabel?: string
 }
 
-export function SpinResult({ open, winnerName, onConfirm, loading, error }: SpinResultProps) {
+export function SpinResult({
+  open,
+  winnerName,
+  onConfirm,
+  loading,
+  error,
+  description,
+  confirmLabel,
+}: SpinResultProps) {
   useEffect(() => {
     if (!open) return
     void confetti({
@@ -45,9 +55,11 @@ export function SpinResult({ open, winnerName, onConfirm, loading, error }: Spin
             Spin Complete
           </p>
           <p className="mt-2 text-sm text-text-secondary">Selected Team</p>
-          <p className="mt-2.5 font-display text-3xl font-extrabold tracking-tight text-text-primary">{winnerName}</p>
+          <p className="mt-2.5 font-display text-3xl font-extrabold tracking-tight text-text-primary">
+            {winnerName}
+          </p>
           <p className="mt-3.5 text-xs leading-relaxed text-text-muted">
-            This result is final. Confirm to assign the team to this project.
+            {description ?? 'This result has been saved.'}
           </p>
 
           {error && (
@@ -62,7 +74,7 @@ export function SpinResult({ open, winnerName, onConfirm, loading, error }: Spin
             onClick={onConfirm}
             disabled={loading}
           >
-            {loading ? 'Locking…' : 'Confirm & Lock'}
+            {loading ? 'Saving...' : confirmLabel ?? 'Done'}
           </Button>
         </div>
       </motion.div>

@@ -43,7 +43,7 @@ export function ThemeToggle() {
             aria-label={`${label} theme`}
             onClick={() => setTheme(value)}
             className={cn(
-              'relative inline-flex min-h-9 cursor-pointer select-none items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-display font-semibold transition-colors duration-250 active:scale-[0.97] outline-none',
+              'relative inline-flex min-h-11 min-w-11 cursor-pointer select-none items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-display font-semibold transition-colors duration-250 active:scale-[0.97] outline-none',
               active
                 ? 'text-accent'
                 : 'text-text-secondary hover:text-text-primary',
