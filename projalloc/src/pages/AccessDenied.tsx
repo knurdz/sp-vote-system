@@ -13,7 +13,7 @@ export function AccessDenied() {
         <h1 className="mb-2 text-2xl font-bold text-text-primary">Access Denied</h1>
         <p className="mb-6 text-sm leading-relaxed text-text-secondary">
           Your Google account is not registered as an admin or team on
-          ProjAlloc. Contact your project coordinator if you need access.
+          FITsp. Contact your project coordinator if you need access.
         </p>
         <div className="flex justify-center gap-3">
           <Link to="/">

@@ -8,13 +8,13 @@ interface ButtonProps extends HTMLMotionProps<'button'> {
 
 const variants = {
   primary:
-    'bg-accent font-display font-semibold text-black border border-accent shadow-[0_4px_16px_var(--accent-glow)] hover:bg-accent-hover hover:shadow-[0_6px_22px_var(--accent-glow)]',
+    'bg-accent font-display font-semibold text-black border border-accent shadow-[0_4px_16px_var(--accent-glow)] hover:bg-accent-hover hover:shadow-[0_8px_24px_rgba(0,201,120,0.25)]',
   secondary:
-    'bg-accent/8 font-display font-semibold text-accent border border-accent/30 hover:border-accent/50 hover:bg-accent/15',
+    'bg-accent/8 backdrop-blur-sm font-display font-semibold text-accent border border-accent/25 hover:border-accent/45 hover:bg-accent/16 shadow-[0_4px_12px_rgba(0,0,0,0.03)]',
   ghost:
-    'bg-transparent text-text-secondary border border-border font-display font-medium hover:border-accent/30 hover:bg-bg-elevated hover:text-text-primary',
+    'bg-bg-surface/30 backdrop-blur-sm text-text-secondary border border-border font-display font-medium hover:border-accent/35 hover:bg-bg-elevated hover:text-text-primary shadow-[0_4px_12px_rgba(0,0,0,0.02)]',
   danger:
-    'bg-red/8 font-display font-semibold text-red border border-red/30 hover:bg-red/15 hover:border-red/50',
+    'bg-red/8 backdrop-blur-sm font-display font-semibold text-red border border-red/25 hover:bg-red/15 hover:border-red/45 shadow-[0_4px_12px_rgba(0,0,0,0.02)]',
 }
 
 const sizes = {
@@ -33,8 +33,8 @@ export function Button({
 }: ButtonProps) {
   return (
     <motion.button
-      whileHover={disabled ? undefined : { scale: 1.015, y: -1 }}
-      whileTap={disabled ? undefined : { scale: 0.97, y: 0 }}
+      whileHover={disabled ? undefined : { scale: 1.01, y: -1 }}
+      whileTap={disabled ? undefined : { scale: 0.98, y: 0 }}
       transition={{ type: 'spring', stiffness: 500, damping: 15 }}
       className={cn(
         'inline-flex cursor-pointer select-none items-center justify-center rounded-btn transition-colors duration-150 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none',

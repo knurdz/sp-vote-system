@@ -21,6 +21,10 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# Local dummy projects
+src/local-dummy-projects.ts
+
 .DS_Store
 *.suo
 *.ntvs*
