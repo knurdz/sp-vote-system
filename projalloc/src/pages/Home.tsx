@@ -89,7 +89,7 @@ export function Home() {
               Project Board
             </h1>
             <p className="mt-3 max-w-2xl text-[16px] leading-relaxed text-text-secondary">
-              Browse industry projects and pick what your team wants to work on. Active teams can vote once rounds open.
+              Browse industry projects and pick what your team wants to work on.<br /> Active teams can vote once rounds open.
             </p>
           </header>
         </div>
