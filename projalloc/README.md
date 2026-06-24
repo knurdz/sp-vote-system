@@ -103,7 +103,7 @@ Admins are seeded via the `admin_emails` table. Team leaders are registered by a
 
 ## Key Features
 
-- Public project board with status filters and countdown timers
+- Public Mission Log with status filters and countdown timers
 - Team leader voting with withdraw support during voting period
 - Admin CRUD for projects and teams
 - Live spin-the-bottle wheel for Zoom screenshare events

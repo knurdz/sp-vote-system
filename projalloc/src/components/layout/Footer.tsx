@@ -6,8 +6,8 @@ const GITHUB_URL = 'https://github.com/knurdz/sp-vote-system'
 const KNURDZ_URL = 'https://knurdz.org/'
 
 const CONTACTS = [
-  { name: 'Thesaru Praneeth', phone: '07xxxxxxxxx' },
-  { name: 'Kaveesha Ginodh', phone: '07xxxxxxxxx' },
+  { name: 'Thesaru Praneeth', phone: '+94751864888' },
+  { name: 'Kaveesha Ginodh', phone: '+94779392448' },
 ]
 
 function GitHubIcon() {
@@ -45,8 +45,7 @@ export function Footer() {
             <img src={knurdzLogo} alt="Knurdz" className="h-7 w-auto" />
           </a>
           <p className="max-w-[280px] text-[13px] leading-relaxed text-text-muted">
-            Engineering the future through code, hardware, and social
-            innovation.
+          Building open-source projects from code to silicon
           </p>
         </div>
 
@@ -96,7 +95,7 @@ export function Footer() {
 
       <div className="border-t border-border/30 py-4 pb-24 xl:pb-4">
         <p className="mx-auto max-w-page px-6 text-center font-mono text-[11px] text-text-muted sm:px-8 md:text-left">
-          © 2026 FITsp. All rights reserved.
+          © 2026 Centurion. All rights reserved.
         </p>
       </div>
     </footer>
