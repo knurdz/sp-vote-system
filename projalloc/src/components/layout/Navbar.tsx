@@ -72,10 +72,10 @@ export function Navbar() {
       <header className="sticky top-0 z-40 w-full shrink-0 border-b border-border bg-bg-header/70 shadow-panel backdrop-blur-lg">
         <nav className="mx-auto flex h-16 w-full max-w-page items-center justify-between gap-4 px-4 sm:px-8">
           <div className="flex min-w-0 items-center gap-3 sm:gap-6">
-            <div className="shrink-0">
+            <div className="flex shrink-0 flex-col gap-0.5 pt-1">
               <Wordmark />
-              <p className="hidden mt-0.5 pl-3.5 text-[11px] font-mono tracking-wide text-text-muted xl:block">
-                Transparent project allocation
+              <p className="hidden pl-0.5 text-[10px] font-mono leading-tight tracking-wide text-text-muted xl:block">
+                The briefing room for transparent project Ops.
               </p>
             </div>
 
