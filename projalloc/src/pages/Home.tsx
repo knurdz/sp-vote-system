@@ -86,7 +86,7 @@ export function Home() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
           <header className="text-center w-full relative flex flex-col items-center">
             <h1 className="font-display text-4xl font-extrabold tracking-tight text-text-primary sm:text-5xl md:text-6xl">
-              Project Board
+              Mission Log
             </h1>
             <p className="mt-3 max-w-2xl text-[16px] leading-relaxed text-text-secondary">
               Browse industry projects and pick what your team wants to work on.<br /> Active teams can vote once rounds open.
