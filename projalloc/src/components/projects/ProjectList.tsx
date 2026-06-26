@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { ProjectCard } from './ProjectCard'
 import { Alert } from '@/components/ui/Alert'
 import { ProjectCardSkeleton } from '@/components/ui/Skeleton'
-import { sortProjectsByStatus } from '@/lib/utils'
+import { sortProjectsByStatus, cn } from '@/lib/utils'
 import type { AssignedTeamInfo, Project } from '@/types'
 
 interface ProjectListProps {
@@ -68,20 +68,29 @@ export function ProjectList({
   }
 
   return (
-    <div className="grid grid-cols-1 grid-flow-row-dense gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-      {sorted.map((project, index) => (
-        <ProjectCard
-          key={project.id}
-          project={project}
-          featured={project.status === 'voting'}
-          assignedTeam={assignedTeams[project.id]}
-          showAdminEmail={showAdminEmail}
-          index={index}
-          hoveredIndex={hoveredIndex}
-          onHoverStart={setHoveredIndex}
-          onHoverEnd={() => setHoveredIndex(null)}
-        />
-      ))}
-    </div>
+    <>
+      <div
+        className={cn(
+          "fixed inset-0 z-45 bg-black/15 backdrop-blur-[6px] transition-all duration-300 opacity-0 pointer-events-none",
+          hoveredIndex !== null && "opacity-100 pointer-events-auto sm:pointer-events-none"
+        )}
+        onClick={() => setHoveredIndex(null)}
+      />
+      <div className="grid grid-cols-1 grid-flow-row-dense gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        {sorted.map((project, index) => (
+          <ProjectCard
+            key={project.id}
+            project={project}
+            featured={project.status === 'voting'}
+            assignedTeam={assignedTeams[project.id]}
+            showAdminEmail={showAdminEmail}
+            index={index}
+            hoveredIndex={hoveredIndex}
+            onHoverStart={setHoveredIndex}
+            onHoverEnd={() => setHoveredIndex(null)}
+          />
+        ))}
+      </div>
+    </>
   )
 }
