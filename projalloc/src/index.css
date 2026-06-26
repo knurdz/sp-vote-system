@@ -4,7 +4,6 @@
 
 :root,
 [data-theme='dark'] {
-  /* HSL Primary Scale (Emerald #34D399) */
   --primary-50: 158 95% 95%;
   --primary-100: 158 95% 87%;
   --primary-200: 158 95% 74%;
