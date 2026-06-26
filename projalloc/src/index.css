@@ -58,11 +58,18 @@
 
 /* Glassmorphism card effect */
 .card {
-    backdrop-filter: var(--card-backdrop-filter);
-    -webkit-backdrop-filter: var(--card-backdrop-filter);
-    background-color: var(--card-bg);
-    border-radius: 12px;
-    border: 1px solid var(--card-border);
+  -webkit-backdrop-filter: var(--card-backdrop-filter);
+  backdrop-filter: var(--card-backdrop-filter);
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+}
+
+.flip-card.card {
+  -webkit-backdrop-filter: var(--card-backdrop-filter);
+  backdrop-filter: var(--card-backdrop-filter);
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
 }
 
 [data-theme='light'] {
@@ -555,7 +562,6 @@ input[type="range"]::-moz-range-thumb:hover {
 }
 
 .flip-card {
-  background-color: transparent;
   width: 100%;
   margin: 0 auto;
   height: 100%;
