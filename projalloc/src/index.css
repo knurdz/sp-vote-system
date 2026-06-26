@@ -469,89 +469,10 @@ input[type="range"]::-moz-range-thumb:hover {
   height: 190px;
   position: relative;
   z-index: 1;
-  transition:
-    height 0.48s cubic-bezier(0.16, 1, 0.3, 1),
-    z-index 0s 0.48s;
 }
 
-/* Grid shifting utilities */
-.shift-col-1 {
-  grid-column-start: 1 !important;
-}
-
-@media (min-width: 768px) {
-  .md\:shift-col-1 {
-    grid-column-start: 1 !important;
-  }
-}
-
-@media (min-width: 1024px) {
-  .lg\:shift-col-1 {
-    grid-column-start: 1 !important;
-  }
-}
-
-@media (min-width: 1280px) {
-  .xl\:shift-col-1 {
-    grid-column-start: 1 !important;
-  }
-}
-
-/* React state-based card expansion */
-.expanded-card {
-  z-index: 10;
-  transition:
-    height 0.48s cubic-bezier(0.16, 1, 0.3, 1),
-    z-index 0s;
-  grid-row: span 2;
-  height: calc(380px + 1.25rem);
-}
-
-@media (max-width: 639px) {
-  .expanded-card {
-    height: 280px;
-  }
-}
-
-/* sm: 2 columns */
-@media (min-width: 640px) and (max-width: 767px) {
-  .expanded-card {
-    grid-column: 1 / span 2;
-    height: calc(380px + 1.25rem);
-  }
-}
-
-/* md: 3 columns */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .expanded-card {
-    grid-column: span 2;
-    height: calc(380px + 1.25rem);
-  }
-  .expanded-card-left-3n {
-    grid-column: 2 / span 2;
-  }
-}
-
-/* lg: 4 columns */
-@media (min-width: 1024px) and (max-width: 1279px) {
-  .expanded-card {
-    grid-column: span 2;
-    height: calc(380px + 1.25rem);
-  }
-  .expanded-card-left-4n {
-    grid-column: 3 / span 2;
-  }
-}
-
-/* xl: 5 columns */
-@media (min-width: 1280px) {
-  .expanded-card {
-    grid-column: span 2;
-    height: calc(380px + 1.25rem);
-  }
-  .expanded-card-left-5n {
-    grid-column: 4 / span 2;
-  }
+.flip-card-container.is-hovered {
+  z-index: 50;
 }
 
 .flip-card {
@@ -563,12 +484,31 @@ input[type="range"]::-moz-range-thumb:hover {
   transform: scaleX(0.92) translateZ(0);
   transform-origin: center;
   touch-action: pan-y;
-  transition: transform 0.48s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition:
+    transform 0.48s cubic-bezier(0.16, 1, 0.3, 1),
+    width 0.48s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.48s cubic-bezier(0.16, 1, 0.3, 1),
+    top 0.48s cubic-bezier(0.16, 1, 0.3, 1),
+    left 0.48s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, width, height, top, left;
 }
 
 .flip-card-container.is-hovered .flip-card {
-  transform: scaleX(1) translateZ(0);
+  top: 50%;
+  left: 50%;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  height: 400px;
+  transform: translate(-50%, -50%) scale(1.05) translateZ(0);
+}
+
+@media (max-width: 639px) {
+  .flip-card-container.is-hovered .flip-card {
+    height: 330px;
+  }
 }
 
 .flip-card-inner {

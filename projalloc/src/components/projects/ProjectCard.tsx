@@ -62,16 +62,8 @@ export function ProjectCard({
   const isAssigned = project.status === 'assigned'
   const styles = STATUS_STYLES[project.status]
 
-  // Shifting helper logic for when the last card in a row is expanded
+  // Hover status helper
   const isHovered = hoveredIndex === index
-  const isLeftNeighbor = hoveredIndex !== null && index === hoveredIndex - 1
-  const isHoveredCol5 = hoveredIndex !== null && hoveredIndex % 5 === 4
-  const isHoveredCol4 = hoveredIndex !== null && hoveredIndex % 4 === 3
-  const isHoveredCol3 = hoveredIndex !== null && hoveredIndex % 3 === 2
-
-  const isSelfCol5 = index % 5 === 4
-  const isSelfCol4 = index % 4 === 3
-  const isSelfCol3 = index % 3 === 2
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
   const suppressClickRef = useRef(false)
@@ -147,15 +139,7 @@ export function ProjectCard({
       data-project-card-index={index}
       className={cn(
         "flip-card-container w-full relative",
-        // Shifting classes for left neighbors of hovered last-column cards
-        isLeftNeighbor && isHoveredCol5 && "xl:shift-col-1",
-        isLeftNeighbor && isHoveredCol4 && "lg:shift-col-1 xl:col-start-auto",
-        isLeftNeighbor && isHoveredCol3 && "md:shift-col-1 lg:col-start-auto",
-        // Expansion classes for the hovered card itself
-        isHovered && "expanded-card is-hovered",
-        isHovered && isSelfCol5 && "xl:expanded-card-left-5n",
-        isHovered && isSelfCol4 && "lg:expanded-card-left-4n xl:expanded-card-left-auto",
-        isHovered && isSelfCol3 && "md:expanded-card-left-3n lg:expanded-card-left-auto"
+        isHovered && "is-hovered"
       )}
       onMouseLeave={onHoverEnd}
       onPointerDown={handlePointerDown}
@@ -171,10 +155,10 @@ export function ProjectCard({
     >
       <div
         className={cn(
-          "flip-card w-full h-full card shadow-panel transition-all duration-300",
+          "flip-card w-full h-full card shadow-panel",
           styles.border,
-          styles.hoverBorder,
-          styles.hoverShadow
+          isHovered ? styles.hoverBorder.replace(/hover:/g, '') : styles.hoverBorder,
+          isHovered ? styles.hoverShadow.replace(/hover:/g, '') : styles.hoverShadow
         )}
       >
         <Link
