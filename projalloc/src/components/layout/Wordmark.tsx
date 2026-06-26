@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import CenturionLogoBlack from '@/assets/Centurion-logo-black.svg'
-import CenturionLogoWhite from '@/assets/Centurion-logo-white.svg'
+import CenturionLogoBlack from '@/assets/centurion-logo-black.svg'
+import CenturionLogoWhite from '@/assets/centurion-logo-white.svg'
 import { useThemeStore } from '@/store/themeStore'
 
 interface WordmarkProps {
