@@ -147,7 +147,7 @@ export function TeamCsvUpload({ teams, onComplete }: TeamCsvUploadProps) {
           className="block w-full text-sm text-text-secondary file:mr-4 file:rounded-xl file:border-0 file:bg-accent file:px-4 file:py-2 file:text-xs file:font-display file:font-bold file:uppercase file:tracking-wide file:text-black hover:file:bg-accent-hover cursor-pointer"
         />
         <p className="mt-2.5 font-mono text-[11px] text-text-muted">
-          Expected columns: <span className="font-mono text-text-secondary">team_name, account_email</span>
+          Expected columns: <span className="font-mono text-text-secondary">team_name (or group_name), account_email (or personal_email)</span>
         </p>
       </div>
 
