@@ -151,6 +151,19 @@ body {
   background-attachment: fixed;
 }
 
+select option {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+select {
+  color-scheme: dark;
+}
+
+[data-theme='light'] select {
+  color-scheme: light;
+}
+
 .font-display {
   font-family: var(--font-display);
 }
