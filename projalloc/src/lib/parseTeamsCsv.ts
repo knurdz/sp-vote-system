@@ -9,8 +9,8 @@ export interface ParseTeamsCsvResult {
   errors: string[]
 }
 
-const NAME_HEADERS = new Set(['name', 'team', 'team_name', 'teamname'])
-const EMAIL_HEADERS = new Set(['leader_email', 'email', 'account_email', 'leader', 'leader_gmail', 'gmail'])
+const NAME_HEADERS = new Set(['name', 'team', 'team_name', 'teamname', 'group_name', 'group'])
+const EMAIL_HEADERS = new Set(['leader_email', 'email', 'account_email', 'leader', 'leader_gmail', 'gmail', 'personal_email'])
 
 function normalizeHeader(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, '_')
@@ -83,21 +83,38 @@ export function parseTeamsCsv(content: string): ParseTeamsCsvResult {
     const lineNumber = hasHeader ? index + 2 : index + 1
     const cells = parseCsvLine(line)
 
-    if (cells.length < 2) {
-      errors.push(`Line ${lineNumber}: expected team name and account email.`)
+    const minCells = Math.max(nameIndex, emailIndex) + 1
+    if (cells.length < minCells) {
+      errors.push(`Line ${lineNumber}: expected at least ${minCells} columns.`)
       return
     }
 
-    const name = cells[nameIndex]?.trim()
-    const leaderEmail = cells[emailIndex]?.trim().toLowerCase()
+    let name = cells[nameIndex]?.trim()
+    let leaderEmail = cells[emailIndex]?.trim().toLowerCase()
 
-    if (!name || name.length < 2 || name.length > 60) {
-      errors.push(`Line ${lineNumber}: team name must be 2–60 characters.`)
-      return
+    if (!name || name.length < 2) {
+      name = `IT-${String(lineNumber).padStart(2, '0')}`
+    }
+
+    if (leaderEmail) {
+      const parts = leaderEmail.split(/[\/\s,]+/)
+      let firstPart = parts[0]?.trim() || ''
+
+      firstPart = firstPart.replace(/,com$/, '.com').replace(/,org$/, '.org').replace(/,net$/, '.net')
+
+      if (firstPart.includes('yahoo.com')) {
+        firstPart = firstPart.replace(/@yahoo\.com/g, '@gmail.com')
+      }
+
+      leaderEmail = firstPart
     }
 
     if (!leaderEmail || !isValidEmail(leaderEmail)) {
-      errors.push(`Line ${lineNumber}: invalid account email "${cells[emailIndex] ?? ''}".`)
+      leaderEmail = `dummy-it-${String(lineNumber).padStart(2, '0')}@gmail.com`
+    }
+
+    if (name.length > 60) {
+      errors.push(`Line ${lineNumber}: team name must be 2–60 characters.`)
       return
     }
 
