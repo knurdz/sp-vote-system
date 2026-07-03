@@ -14,6 +14,7 @@ import { Dashboard } from '@/pages/admin/Dashboard'
 import { AdminProjects } from '@/pages/admin/Projects'
 import { AdminTeams } from '@/pages/admin/Teams'
 import { AdminSpin } from '@/pages/admin/Spin'
+import { Workspace } from '@/pages/Workspace'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -38,6 +39,15 @@ export default function App() {
         <Route path="/results" element={<Results />} />
         <Route path="/login" element={<Login />} />
         <Route path="/access-denied" element={<AccessDenied />} />
+
+        <Route
+          path="/workspace"
+          element={
+            <ProtectedRoute requiredRole="leader">
+              <Workspace />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/admin"

@@ -1,10 +1,14 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import { Card } from '@/components/ui/Card'
 import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
+import { Alert } from '@/components/ui/Alert'
 import { useDashboardStats } from '@/hooks/useSpinEvent'
+import { useSettings } from '@/hooks/useSettings'
+import { DateTimePicker } from '@/components/ui/DateTimePicker'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -81,6 +85,108 @@ export function Dashboard() {
           </Button>
         </Link>
       </div>
+
+      <CvSettingsPanel />
     </PageWrapper>
+  )
+}
+
+function CvSettingsPanel() {
+  const { settings, loading, error, updateSettings } = useSettings()
+  const [start, setStart] = useState('')
+  const [deadline, setDeadline] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (settings) {
+      const formatToLocalValue = (dateStr: string) => {
+        if (!dateStr) return ''
+        const date = new Date(dateStr)
+        const offset = date.getTimezoneOffset()
+        const local = new Date(date.getTime() - offset * 60_000)
+        return local.toISOString().slice(0, 16)
+      }
+      setStart(formatToLocalValue(settings.cv_upload_start))
+      setDeadline(formatToLocalValue(settings.cv_upload_deadline))
+    }
+  }, [settings])
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    setFormError(null)
+    setSuccess(null)
+
+    if (!start || !deadline) {
+      setFormError('Please select both start and deadline date-times.')
+      setSaving(false)
+      return
+    }
+
+    if (new Date(deadline) <= new Date(start)) {
+      setFormError('The submission deadline must be after the upload start time.')
+      setSaving(false)
+      return
+    }
+
+    try {
+      await updateSettings(
+        new Date(start).toISOString(),
+        new Date(deadline).toISOString()
+      )
+      setSuccess('Timeline settings updated successfully.')
+    } catch (err: any) {
+      setFormError(err.message || 'Failed to update settings.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <Card className="p-6 mt-8 flex justify-center items-center">
+        <Spinner />
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="p-6 mt-8 border border-border/80 bg-bg-surface/30 backdrop-blur-md rounded-2xl shadow-panel">
+      <div className="border-b border-border/40 pb-4 mb-4">
+        <h3 className="font-display text-lg font-bold text-text-primary">CV Upload Timeline Settings</h3>
+        <p className="text-xs text-text-secondary mt-0.5">
+          Configure the active window during which teams are allowed to upload their ZIP archives.
+        </p>
+      </div>
+
+      {formError && <div className="mb-4"><Alert message={formError} /></div>}
+      {error && <div className="mb-4"><Alert message={error} /></div>}
+      {success && (
+        <div className="mb-4 rounded-xl border border-accent/20 bg-accent/5 p-4 text-xs font-medium text-accent">
+          {success}
+        </div>
+      )}
+
+      <form onSubmit={handleSave} className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-text-secondary">Upload Start Time</label>
+            <DateTimePicker value={start} onChange={setStart} />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-text-secondary">Upload Deadline</label>
+            <DateTimePicker value={deadline} onChange={setDeadline} />
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-2">
+          <Button type="submit" disabled={saving}>
+            {saving ? 'Saving settings...' : 'Save Timeline'}
+          </Button>
+        </div>
+      </form>
+    </Card>
   )
 }

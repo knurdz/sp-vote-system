@@ -46,10 +46,27 @@ const NAV_ITEMS = [
 
 export function Navbar() {
   const { user, role, signOut } = useAuth()
-  const team = useUserTeam(user?.email, role)
+  const { team } = useUserTeam(user?.email, role)
   const { pathname } = useLocation()
 
-  const visibleNavItems = NAV_ITEMS.filter(
+  const visibleNavItems = [
+    ...NAV_ITEMS,
+    ...(role === 'leader'
+      ? [
+          {
+            to: '/workspace',
+            label: 'Workspace',
+            match: (path: string) => path.startsWith('/workspace'),
+            icon: (
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="M5 22h14a2 2 0 002-2V7.5L16.5 3H5a2 2 0 00-2 2v15a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M16 3v5h5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ),
+          },
+        ]
+      : []),
+  ].filter(
     (item) => !('adminOnly' in item && item.adminOnly) || role === 'admin',
   )
 
