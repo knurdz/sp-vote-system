@@ -132,7 +132,7 @@ export function Navbar() {
                 <div className="hidden min-w-0 md:block">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate text-[13px] font-medium text-text-primary">
-                      {truncate(primaryLabel, 16)}
+                      {truncate(primaryLabel, 32)}
                     </span>
                     {isAdmin && <Badge variant="admin">admin</Badge>}
                   </div>
