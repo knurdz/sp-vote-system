@@ -11,7 +11,16 @@ export interface Team {
   id: string
   name: string
   leader_email: string
+  cv_url?: string | null
   created_at: string
+}
+
+export interface SystemSettings {
+  id: number
+  cv_upload_start: string
+  cv_upload_deadline: string
+  created_at?: string
+  updated_at?: string
 }
 
 export type ProjectStatus = 'upcoming' | 'voting' | 'closed' | 'assigned'

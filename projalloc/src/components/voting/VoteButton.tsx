@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
 import { Spinner } from '@/components/ui/Spinner'
 import { useVote } from '@/hooks/useVote'
+import { formatDateTime } from '@/lib/utils'
 
 interface VoteButtonProps {
   projectId: string
@@ -17,6 +18,10 @@ export function VoteButton({ projectId, votingOpen }: VoteButtonProps) {
     canVote,
     assignedElsewhere,
     assignment,
+    cvUploaded,
+    cvUploadDeadline,
+    uploadDeadlinePassed,
+    role,
     vote,
     withdraw,
   } = useVote(projectId)
@@ -31,6 +36,34 @@ export function VoteButton({ projectId, votingOpen }: VoteButtonProps) {
         message={`Your team is already on "${assignment.projectTitle}". You can only vote on one project.`}
       />
     )
+  }
+
+  // Show locking warnings to team leaders
+  if (role === 'leader') {
+    // 1. If CV upload deadline has not passed, block voting
+    if (cvUploadDeadline && !uploadDeadlinePassed) {
+      return (
+        <div className="space-y-2">
+          <Alert
+            variant="info"
+            message={`Voting will open after the CV upload window closes on ${formatDateTime(cvUploadDeadline)}.`}
+          />
+          <p className="text-[11px] text-text-muted text-center italic font-medium">
+            Make sure your team has uploaded its ZIP archive in your Home page workspace before this deadline!
+          </p>
+        </div>
+      )
+    }
+
+    // 2. If deadline has passed, but this team didn't upload a CV ZIP
+    if (uploadDeadlinePassed && !cvUploaded) {
+      return (
+        <Alert
+          variant="error"
+          message="Voting locked. Your team is ineligible to vote because no CV ZIP archive was uploaded before the deadline."
+        />
+      )
+    }
   }
 
   if (!canVote) return null

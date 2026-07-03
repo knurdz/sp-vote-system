@@ -31,31 +31,31 @@ export function useTeams() {
 }
 
 export function useUserTeam(email: string | undefined, role: Role | null) {
-  const [teamState, setTeamState] = useState<{ email: string; team: Team | null } | null>(null)
+  const [team, setTeam] = useState<Team | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchTeam = useCallback(async () => {
     if (!email || role !== 'leader') {
+      setTeam(null)
+      setLoading(false)
       return
     }
 
-    let mounted = true
-
-    void supabase
+    const { data } = await supabase
       .from('teams')
       .select('*')
       .eq('leader_email', email)
       .maybeSingle()
-      .then(({ data }) => {
-        if (mounted) setTeamState({ email, team: (data as Team | null) ?? null })
-      })
 
-    return () => {
-      mounted = false
-    }
+    setTeam((data as Team | null) ?? null)
+    setLoading(false)
   }, [email, role])
 
-  if (!email || role !== 'leader' || teamState?.email !== email) return null
-  return teamState.team
+  useEffect(() => {
+    void fetchTeam()
+  }, [fetchTeam])
+
+  return { team, loading, refetch: fetchTeam }
 }
 
 export async function teamHasVotes(teamId: string) {
