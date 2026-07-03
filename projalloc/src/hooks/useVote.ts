@@ -56,6 +56,9 @@ export function useVote(projectId: string | undefined) {
   const [hasVoted, setHasVoted] = useState(false)
   const [voteId, setVoteId] = useState<string | null>(null)
   const [teamId, setTeamId] = useState<string | null>(null)
+  const [cvUploaded, setCvUploaded] = useState(false)
+  const [cvUploadDeadline, setCvUploadDeadline] = useState<string>('')
+  const [uploadDeadlinePassed, setUploadDeadlinePassed] = useState(false)
   const [assignment, setAssignment] = useState<TeamAssignment | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
@@ -71,7 +74,7 @@ export function useVote(projectId: string | undefined) {
 
     const { data: team, error: teamErr } = await supabase
       .from('teams')
-      .select('id')
+      .select('id, cv_url')
       .eq('leader_email', userEmail)
       .single()
 
@@ -81,6 +84,18 @@ export function useVote(projectId: string | undefined) {
     }
 
     setTeamId(team.id)
+    setCvUploaded(!!team.cv_url)
+
+    const { data: settings } = await supabase
+      .from('settings')
+      .select('cv_upload_deadline')
+      .eq('id', 1)
+      .single()
+
+    if (settings) {
+      setCvUploadDeadline(settings.cv_upload_deadline)
+      setUploadDeadlinePassed(new Date() > new Date(settings.cv_upload_deadline))
+    }
 
     const assigned = await fetchTeamAssignment(team.id)
     setAssignment(assigned)
@@ -109,6 +124,31 @@ export function useVote(projectId: string | undefined) {
     if (!projectId || !userEmail || !teamId || assignment) return
     setActionLoading(true)
     setError(null)
+
+    // Check CV and settings state at action time
+    const { data: teamCheck } = await supabase
+      .from('teams')
+      .select('cv_url')
+      .eq('id', teamId)
+      .single()
+
+    if (!teamCheck?.cv_url) {
+      setError('Your team must upload a CV ZIP file before you can vote.')
+      setActionLoading(false)
+      return
+    }
+
+    const { data: settings } = await supabase
+      .from('settings')
+      .select('cv_upload_deadline')
+      .eq('id', 1)
+      .single()
+
+    if (settings && new Date() <= new Date(settings.cv_upload_deadline)) {
+      setError('Voting is locked until the CV upload period closes.')
+      setActionLoading(false)
+      return
+    }
 
     const votingOpen = await isProjectVotingOpen(projectId)
     if (!votingOpen) {
@@ -171,7 +211,11 @@ export function useVote(projectId: string | undefined) {
     error,
     assignment,
     assignedElsewhere,
-    canVote: role === 'leader' && !!teamId && !assignedElsewhere,
+    cvUploaded,
+    cvUploadDeadline,
+    uploadDeadlinePassed,
+    role,
+    canVote: role === 'leader' && !!teamId && !assignedElsewhere && cvUploaded && uploadDeadlinePassed,
     vote,
     withdraw,
   }

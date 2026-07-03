@@ -87,6 +87,21 @@ export function AdminTeams() {
     await refetch()
   }
 
+  const handleDownloadCv = async (cvUrl: string) => {
+    try {
+      const { data, error: err } = await supabase.storage
+        .from('cvs')
+        .createSignedUrl(cvUrl, 60)
+
+      if (err) throw err
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank')
+      }
+    } catch (err: any) {
+      alert('Error generating download link: ' + err.message)
+    }
+  }
+
   const inputClass = 'input-field input-field-focus'
 
   return (
@@ -132,6 +147,7 @@ export function AdminTeams() {
               <tr className="border-b border-border bg-bg-elevated/40">
                 <th className="px-5 py-4 font-display font-semibold text-[13px] uppercase tracking-wider text-text-muted">Team Name</th>
                 <th className="px-5 py-4 font-display font-semibold text-[13px] uppercase tracking-wider text-text-muted">Registered</th>
+                <th className="px-5 py-4 font-display font-semibold text-[13px] uppercase tracking-wider text-text-muted">CV</th>
                 <th className="px-5 py-4 font-display font-semibold text-[13px] uppercase tracking-wider text-text-muted">Actions</th>
               </tr>
             </thead>
@@ -158,6 +174,23 @@ export function AdminTeams() {
                   <td className="px-5 py-4 font-semibold text-text-primary">{team.name}</td>
                   <td className="px-5 py-4 font-mono text-[13px] text-text-secondary">
                     {formatDateTime(team.created_at)}
+                  </td>
+                  <td className="px-5 py-4">
+                    {team.cv_url ? (
+                      <button
+                        onClick={() => void handleDownloadCv(team.cv_url!)}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline bg-accent/10 hover:bg-accent/15 px-2.5 py-1 rounded-lg border border-accent/20 transition-all active:scale-[0.98] cursor-pointer"
+                      >
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M12 15V3m0 12l-4-4m4 4l4-4M4 17v4h16" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Download ZIP
+                      </button>
+                    ) : (
+                      <span className="text-[11px] text-text-muted italic bg-bg-elevated/40 px-2 py-0.5 rounded border border-border/40">
+                        No CV
+                      </span>
+                    )}
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex gap-2">

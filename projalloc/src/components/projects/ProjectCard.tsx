@@ -194,11 +194,11 @@ export function ProjectCard({
             {/* FRONT FACE: Name and Company */}
             <div className="flip-card-front">
               <article
-                className="relative flex h-full flex-col justify-between overflow-hidden p-4 sm:p-5"
+                className="relative flex h-full flex-col justify-between overflow-hidden rounded-xl p-4 sm:p-5"
               >
                 {/* Colored top gradient line */}
                 <div
-                  className={cn('absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r', styles.top)}
+                  className={cn('absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r rounded-t-xl', styles.top)}
                   aria-hidden
                 />
   
@@ -231,11 +231,11 @@ export function ProjectCard({
             {/* BACK FACE: Detailed Information */}
             <div className="flip-card-back">
               <article
-                className="relative flex h-full flex-col justify-between overflow-hidden p-5 sm:p-6"
+                className="relative flex h-full flex-col justify-between overflow-hidden rounded-xl p-5 sm:p-6"
               >
                 {/* Colored top gradient line */}
                 <div
-                  className={cn('absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r', styles.top)}
+                  className={cn('absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r rounded-t-xl', styles.top)}
                   aria-hidden
                 />
   
