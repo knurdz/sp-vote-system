@@ -91,15 +91,15 @@ export function Navbar() {
           <div className="flex min-w-0 items-center gap-3 sm:gap-6">
             <div className="flex shrink-0 flex-col gap-0.5 pt-1">
               <Wordmark />
-              <p className="hidden pl-0.5 text-[10px] font-mono leading-tight tracking-wide text-text-muted xl:block">
+              <p className="hidden pl-0.5 text-[10px] font-mono leading-tight tracking-wide text-text-muted md:block">
                 The briefing room for transparent project Ops.
               </p>
             </div>
 
-            <div className="hidden h-6 w-px shrink-0 bg-border xl:block" aria-hidden />
+            <div className="hidden h-6 w-px shrink-0 bg-border md:block" aria-hidden />
 
             {/* Desktop Navigation Links */}
-            <div className="hidden xl:flex items-center rounded-xl border border-border bg-bg-elevated/30 p-0.5">
+            <div className="hidden md:flex items-center rounded-xl border border-border bg-bg-elevated/30 p-0.5">
               {visibleNavItems.map(({ to, label, match, icon }) => {
                 const active = match(pathname)
                 return (
@@ -124,12 +124,12 @@ export function Navbar() {
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <ThemeToggle />
             {user ? (
-              <div className="flex items-center gap-1.5 rounded-xl border border-border/50 bg-bg-elevated/20 p-1 xl:gap-3 xl:bg-bg-elevated/30 xl:px-3 xl:py-2">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/25 bg-accent/10 font-display text-[11px] font-bold text-accent shadow-[0_0_10px_var(--accent-glow)] xl:h-9 xl:w-9">
+              <div className="flex items-center gap-1.5 rounded-xl border border-border/50 bg-bg-elevated/20 p-1 md:gap-3 md:bg-bg-elevated/30 md:px-3 md:py-2">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/25 bg-accent/10 font-display text-[11px] font-bold text-accent shadow-[0_0_10px_var(--accent-glow)] md:h-9 md:w-9">
                   {displayInitials}
                 </div>
 
-                <div className="hidden min-w-0 xl:block">
+                <div className="hidden min-w-0 md:block">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate text-[13px] font-medium text-text-primary">
                       {truncate(primaryLabel, 16)}
@@ -143,12 +143,12 @@ export function Navbar() {
                   )}
                 </div>
 
-                <div className="hidden h-5 w-px bg-border xl:block" aria-hidden />
+                <div className="hidden h-5 w-px bg-border md:block" aria-hidden />
 
                 <button
                   type="button"
                   onClick={() => void signOut()}
-                  className="shrink-0 cursor-pointer select-none font-display text-[13px] font-semibold text-text-secondary transition-colors hover:text-accent flex items-center gap-1 px-2 py-1.5 xl:p-0"
+                  className="shrink-0 cursor-pointer select-none font-display text-[13px] font-semibold text-text-secondary transition-colors hover:text-accent flex items-center gap-1 px-2 py-1.5 md:p-0"
                   aria-label="Sign out"
                 >
                   <span className="hidden 2xl:inline">Sign out</span>
@@ -180,7 +180,7 @@ export function Navbar() {
       </header>
 
       {pathname !== '/login' && (
-        <div className="xl:hidden fixed bottom-6 left-4 right-4 z-50 flex items-center justify-around rounded-2xl border border-border bg-bg-header/85 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.18)] backdrop-blur-lg">
+        <div className="md:hidden fixed bottom-6 left-4 right-4 z-50 flex items-center justify-around rounded-2xl border border-border bg-bg-header/85 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.18)] backdrop-blur-lg">
           {visibleNavItems.map(({ to, label, match, icon }) => {
             const active = match(pathname)
             return (
