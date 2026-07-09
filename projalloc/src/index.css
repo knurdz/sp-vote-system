@@ -156,7 +156,8 @@ select option {
   color: var(--text-primary);
 }
 
-select {
+:root select,
+[data-theme='dark'] select {
   color-scheme: dark;
 }
 

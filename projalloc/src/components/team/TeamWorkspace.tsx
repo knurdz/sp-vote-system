@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useSettings } from '@/hooks/useSettings'
-import { formatDateTime } from '@/lib/utils'
+import { formatDateTime, getErrorMessage, openExternalUrl } from '@/lib/utils'
 import { Alert } from '@/components/ui/Alert'
 import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import type { Team } from '@/types'
 
 interface TeamWorkspaceProps {
@@ -19,6 +20,7 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [dragActive, setDragActive] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   // Determine timeline state
   const now = new Date()
@@ -49,6 +51,26 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
       return
     }
 
+    const validMimes = [
+      'application/zip',
+      'application/x-zip',
+      'application/x-zip-compressed',
+      'application/octet-stream',
+    ]
+    if (file.type && !validMimes.includes(file.type)) {
+      setError('Invalid file type. Only ZIP archives are accepted.')
+      return
+    }
+
+    const header = await file.slice(0, 4).arrayBuffer()
+    const bytes = new Uint8Array(header)
+    const isZip =
+      bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04
+    if (!isZip) {
+      setError('File does not appear to be a valid ZIP archive.')
+      return
+    }
+
     // Enforce 20MB limit
     const maxSize = 20 * 1024 * 1024 // 20 MB
     if (file.size > maxSize) {
@@ -61,46 +83,34 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
     try {
       // 1. Upload to Supabase Storage
       const uniqueName = `${team.id}/${Date.now()}_${file.name}`
-      console.log('Attempting to upload file to Supabase storage:', uniqueName)
       
       const { data, error: uploadErr } = await supabase.storage
         .from('cvs')
         .upload(uniqueName, file, { cacheControl: '3600', upsert: true })
 
       if (uploadErr) {
-        console.error('Supabase Storage upload failed:', uploadErr)
         throw new Error(`Storage Upload Failed: ${uploadErr.message}`)
       }
 
-      console.log('Supabase Storage upload successful. File path:', data.path)
-
       // 2. Clean up previous file if it existed
       if (team.cv_url) {
-        console.log('Cleaning up previous CV archive from storage:', team.cv_url)
-        const { error: removeErr } = await supabase.storage.from('cvs').remove([team.cv_url])
-        if (removeErr) {
-          console.warn('Warning: Could not remove old file from storage:', removeErr)
-        }
+        await supabase.storage.from('cvs').remove([team.cv_url])
       }
 
       // 3. Update database
-      console.log('Updating cv_url in database teams table for team:', team.id)
       const { error: dbErr } = await supabase
         .from('teams')
         .update({ cv_url: data.path })
         .eq('id', team.id)
 
       if (dbErr) {
-        console.error('Supabase Database update failed:', dbErr)
         throw new Error(`Database Update Failed: ${dbErr.message}`)
       }
 
-      console.log('Database update successful!')
       setSuccess('Your team’s CV ZIP archive has been successfully uploaded!')
       await onUpdate()
-    } catch (err: any) {
-      console.error('Upload process encountered an error:', err)
-      setError(err.message || 'An unexpected error occurred during the upload.')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || 'An unexpected error occurred during the upload.')
     } finally {
       setUploading(false)
     }
@@ -134,16 +144,17 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
 
       if (downloadErr) throw downloadErr
       if (data?.signedUrl) {
-        window.open(data.signedUrl, '_blank')
+        openExternalUrl(data.signedUrl)
       }
-    } catch (err: any) {
-      setError('Could not download file: ' + err.message)
+    } catch (err: unknown) {
+      setError('Could not download file: ' + getErrorMessage(err))
     }
   }
 
   const handleDelete = async () => {
-    if (!team.cv_url || !confirm('Are you sure you want to remove your team’s CV archive? This will make your team ineligible for project voting.')) return
+    if (!team.cv_url) return
 
+    setConfirmDelete(false)
     setDeleting(true)
     setError(null)
     setSuccess(null)
@@ -163,8 +174,8 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
 
       setSuccess('Your team’s CV ZIP archive was deleted.')
       await onUpdate()
-    } catch (err: any) {
-      setError('Could not delete file: ' + err.message)
+    } catch (err: unknown) {
+      setError('Could not delete file: ' + getErrorMessage(err))
     } finally {
       setDeleting(false)
     }
@@ -319,7 +330,7 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
                     </Button>
 
                     {!isClosed && (
-                      <Button onClick={handleDelete} variant="danger" className="flex items-center gap-1.5 text-xs font-semibold">
+                      <Button onClick={() => setConfirmDelete(true)} variant="danger" className="flex items-center gap-1.5 text-xs font-semibold">
                         <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -410,6 +421,14 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
         </div>
 
       </div>
+      <ConfirmModal
+        open={confirmDelete}
+        title="Remove CV Archive?"
+        message="Are you sure you want to remove your team's CV archive? This will make your team ineligible for project voting."
+        confirmLabel="Remove"
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </section>
   )
 }

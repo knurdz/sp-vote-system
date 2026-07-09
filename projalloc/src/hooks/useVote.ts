@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePolling } from '@/hooks/usePolling'
+import { useSubmitLock } from '@/hooks/useSubmitLock'
 
 interface TeamAssignment {
   projectId: string
@@ -63,6 +64,7 @@ export function useVote(projectId: string | undefined) {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { runLocked } = useSubmitLock()
 
   const fetchVoteState = useCallback(async () => {
     if (authLoading) return
@@ -121,85 +123,89 @@ export function useVote(projectId: string | undefined) {
   usePolling(fetchVoteState, [projectId, userEmail, role, authLoading])
 
   const vote = useCallback(async () => {
-    if (!projectId || !userEmail || !teamId || assignment) return
-    setActionLoading(true)
-    setError(null)
+    await runLocked(async () => {
+      if (!projectId || !userEmail || !teamId || assignment) return
+      setActionLoading(true)
+      setError(null)
 
-    // Check CV and settings state at action time
-    const { data: teamCheck } = await supabase
-      .from('teams')
-      .select('cv_url')
-      .eq('id', teamId)
-      .single()
+      // Check CV and settings state at action time
+      const { data: teamCheck } = await supabase
+        .from('teams')
+        .select('cv_url')
+        .eq('id', teamId)
+        .single()
 
-    if (!teamCheck?.cv_url) {
-      setError('Your team must upload a CV ZIP file before you can vote.')
+      if (!teamCheck?.cv_url) {
+        setError('Your team must upload a CV ZIP file before you can vote.')
+        setActionLoading(false)
+        return
+      }
+
+      const { data: settings } = await supabase
+        .from('settings')
+        .select('cv_upload_deadline')
+        .eq('id', 1)
+        .single()
+
+      if (settings && new Date() <= new Date(settings.cv_upload_deadline)) {
+        setError('Voting is locked until the CV upload period closes.')
+        setActionLoading(false)
+        return
+      }
+
+      const votingOpen = await isProjectVotingOpen(projectId)
+      if (!votingOpen) {
+        setError('Voting has closed on this project.')
+        setActionLoading(false)
+        return
+      }
+
+      const alreadyVoted = await teamHasVoteOnProject(projectId, teamId)
+      if (alreadyVoted) {
+        setError('Your team already voted on this one.')
+        setActionLoading(false)
+        await fetchVoteState()
+        return
+      }
+
+      const { error: err } = await supabase.from('votes').insert({
+        project_id: projectId,
+        team_id: teamId,
+        leader_email: userEmail,
+      })
+
       setActionLoading(false)
-      return
-    }
-
-    const { data: settings } = await supabase
-      .from('settings')
-      .select('cv_upload_deadline')
-      .eq('id', 1)
-      .single()
-
-    if (settings && new Date() <= new Date(settings.cv_upload_deadline)) {
-      setError('Voting is locked until the CV upload period closes.')
-      setActionLoading(false)
-      return
-    }
-
-    const votingOpen = await isProjectVotingOpen(projectId)
-    if (!votingOpen) {
-      setError('Voting has closed on this project.')
-      setActionLoading(false)
-      return
-    }
-
-    const alreadyVoted = await teamHasVoteOnProject(projectId, teamId)
-    if (alreadyVoted) {
-      setError('Your team already voted on this one.')
-      setActionLoading(false)
+      if (err) {
+        setError(err.message)
+        return
+      }
       await fetchVoteState()
-      return
-    }
-
-    const { error: err } = await supabase.from('votes').insert({
-      project_id: projectId,
-      team_id: teamId,
-      leader_email: userEmail,
     })
-
-    setActionLoading(false)
-    if (err) {
-      setError(err.message)
-      return
-    }
-    await fetchVoteState()
-  }, [projectId, userEmail, teamId, assignment, fetchVoteState])
+  }, [projectId, userEmail, teamId, assignment, fetchVoteState, runLocked])
 
   const withdraw = useCallback(async () => {
-    if (!voteId || !projectId) return
-    setActionLoading(true)
-    setError(null)
+    await runLocked(async () => {
+      if (!voteId || !projectId) return
+      setActionLoading(true)
+      setError(null)
 
-    const votingOpen = await isProjectVotingOpen(projectId)
-    if (!votingOpen) {
-      setError('Voting is closed — you can’t pull your vote back now.')
+      const votingOpen = await isProjectVotingOpen(projectId)
+      if (!votingOpen) {
+        setError('Voting is closed — you can’t pull your vote back now.')
+        setActionLoading(false)
+        return
+      }
+
+      const { error: err } = await supabase.from('votes').delete().eq('id', voteId)
+
       setActionLoading(false)
-      return
-    }
-
-    const { error: err } = await supabase.from('votes').delete().eq('id', voteId)
-
-    setActionLoading(false)
-    if (err) {
-      setError(err.message)
-      return
-    }
-    await fetchVoteState()
-  }, [voteId, projectId, fetchVoteState])
+      if (err) {
+        setError(err.message)
+        return
+      }
+      await fetchVoteState()
+    })
+  }, [voteId, projectId, fetchVoteState, runLocked])
 
   const assignedElsewhere =
     assignment !== null && assignment.projectId !== projectId

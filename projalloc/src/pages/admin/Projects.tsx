@@ -5,12 +5,12 @@ import { PageWrapper } from '@/components/layout/PageWrapper'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { Spinner } from '@/components/ui/Spinner'
 import { Alert } from '@/components/ui/Alert'
 import { ProjectForm, type ProjectFormData } from '@/components/projects/ProjectForm'
 import { SpinModal } from '@/components/spin/SpinModal'
 import { useProjects } from '@/hooks/useProjects'
-import { projectHasVotes } from '@/hooks/useTeams'
 import { supabase } from '@/lib/supabase'
 import { sortProjectsByStatus, STATUS_LABELS } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
@@ -24,6 +24,7 @@ export function AdminProjects() {
   const [editing, setEditing] = useState<Project | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [spinProject, setSpinProject] = useState<Project | null>(null)
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null)
 
   const handleSave = async (data: ProjectFormData) => {
     if (editing) {
@@ -44,28 +45,26 @@ export function AdminProjects() {
     await refetch()
   }
 
-  const handleDelete = async (project: Project) => {
+  const handleDelete = async () => {
+    if (!projectToDelete) return
+
     setDeleteError(null)
 
-    const hasVotes = await projectHasVotes(project.id)
-    const hasRelatedData =
-      hasVotes || project.status === 'closed' || project.status === 'assigned'
-
-    const message = hasRelatedData
-      ? `Delete "${project.title}" and all votes/spin history? This cannot be undone.`
-      : `Delete "${project.title}"?`
-
-    if (!confirm(message)) return
-
     const { error: err } = await supabase.rpc('admin_delete_project', {
-      p_project_id: project.id,
+      p_project_id: projectToDelete.id,
     })
 
     if (err) {
       setDeleteError(err.message)
+      setProjectToDelete(null)
       return
     }
+    setProjectToDelete(null)
     await refetch()
+  }
+
+  const handleDeleteClick = (project: Project) => {
+    setProjectToDelete(project)
   }
 
   return (
@@ -171,7 +170,7 @@ export function AdminProjects() {
                       <Button
                         size="sm"
                         variant="danger"
-                        onClick={() => void handleDelete(project)}
+                        onClick={() => handleDeleteClick(project)}
                       >
                         Delete
                       </Button>
@@ -211,6 +210,15 @@ export function AdminProjects() {
           setSpinProject(null)
           void refetch()
         }}
+      />
+
+      <ConfirmModal
+        open={!!projectToDelete}
+        title="Delete Project"
+        message={projectToDelete ? "Are you sure you want to delete this project?" : ""}
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        onCancel={() => setProjectToDelete(null)}
       />
     </PageWrapper>
   )

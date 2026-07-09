@@ -4,13 +4,14 @@ import { Link } from 'react-router-dom'
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { Spinner } from '@/components/ui/Spinner'
 import { Alert } from '@/components/ui/Alert'
 import { TeamCsvUpload } from '@/components/admin/TeamCsvUpload'
 import { useTeams, teamHasVotes } from '@/hooks/useTeams'
 import { useSubmitLock } from '@/hooks/useSubmitLock'
 import { supabase } from '@/lib/supabase'
-import { formatDateTime } from '@/lib/utils'
+import { formatDateTime, getErrorMessage, openExternalUrl } from '@/lib/utils'
 import { formatZodErrors, teamSchema } from '@/lib/validations'
 import type { Team } from '@/types'
 
@@ -22,6 +23,7 @@ export function AdminTeams() {
   const [leaderEmail, setLeaderEmail] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [teamToDelete, setTeamToDelete] = useState<Team | null>(null)
   const [saving, setSaving] = useState(false)
   const { submitLocked, runLocked } = useSubmitLock()
 
@@ -70,21 +72,28 @@ export function AdminTeams() {
     })
   }
 
-  const handleDelete = async (team: Team) => {
+  const handleDelete = async () => {
+    if (!teamToDelete) return
+    setDeleteError(null)
+
+    const { error: err } = await supabase.from('teams').delete().eq('id', teamToDelete.id)
+    if (err) {
+      setDeleteError(err.message)
+      setTeamToDelete(null)
+      return
+    }
+    setTeamToDelete(null)
+    await refetch()
+  }
+
+  const handleDeleteClick = async (team: Team) => {
     setDeleteError(null)
     const hasVotes = await teamHasVotes(team.id)
     if (hasVotes) {
       setDeleteError(`Cannot delete "${team.name}" — team has active votes.`)
       return
     }
-    if (!confirm(`Delete team "${team.name}"?`)) return
-
-    const { error: err } = await supabase.from('teams').delete().eq('id', team.id)
-    if (err) {
-      setDeleteError(err.message)
-      return
-    }
-    await refetch()
+    setTeamToDelete(team)
   }
 
   const handleDownloadCv = async (cvUrl: string) => {
@@ -95,10 +104,10 @@ export function AdminTeams() {
 
       if (err) throw err
       if (data?.signedUrl) {
-        window.open(data.signedUrl, '_blank')
+        openExternalUrl(data.signedUrl)
       }
-    } catch (err: any) {
-      alert('Error generating download link: ' + err.message)
+    } catch (err: unknown) {
+      alert('Error generating download link: ' + getErrorMessage(err))
     }
   }
 
@@ -200,7 +209,7 @@ export function AdminTeams() {
                       <Button
                         size="sm"
                         variant="danger"
-                        onClick={() => void handleDelete(team)}
+                        onClick={() => void handleDeleteClick(team)}
                       >
                         Delete
                       </Button>
@@ -249,6 +258,15 @@ export function AdminTeams() {
           </div>
         </div>
       </Modal>
+
+      <ConfirmModal
+        open={!!teamToDelete}
+        title="Delete Team"
+        message={teamToDelete ? `Are you sure you want to delete team "${teamToDelete.name}"?` : ""}
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        onCancel={() => setTeamToDelete(null)}
+      />
     </PageWrapper>
   )
 }
