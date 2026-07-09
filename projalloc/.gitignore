@@ -25,6 +25,13 @@ dist-ssr
 # Local dummy projects
 src/local-dummy-projects.ts
 
+# Debug / scratch files — never commit
+*.scratch.ts
+*.scratch.js
+*.debug.ts
+*.debug.js
+src/check_rls.js
+
 .DS_Store
 *.suo
 *.ntvs*

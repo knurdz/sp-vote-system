@@ -76,3 +76,20 @@ export function getInitials(text: string) {
 
   return trimmed.slice(0, 2).toUpperCase()
 }
+
+export function openExternalUrl(url: string): void {
+  const a = document.createElement('a')
+  a.href = url
+  a.rel = 'noopener noreferrer'
+  a.target = '_blank'
+  a.style.display = 'none'
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+}
+
+export function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message
+  if (typeof err === 'string') return err
+  return 'An unexpected error occurred'
+}

@@ -9,6 +9,7 @@ import { Alert } from '@/components/ui/Alert'
 import { useDashboardStats } from '@/hooks/useSpinEvent'
 import { useSettings } from '@/hooks/useSettings'
 import { DateTimePicker } from '@/components/ui/DateTimePicker'
+import { getErrorMessage } from '@/lib/utils'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -137,8 +138,8 @@ function CvSettingsPanel() {
         new Date(deadline).toISOString()
       )
       setSuccess('Timeline settings updated successfully.')
-    } catch (err: any) {
-      setFormError(err.message || 'Failed to update settings.')
+    } catch (err: unknown) {
+      setFormError(getErrorMessage(err) || 'Failed to update settings.')
     } finally {
       setSaving(false)
     }

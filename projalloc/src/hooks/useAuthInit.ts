@@ -20,13 +20,10 @@ async function forceSignOut(reset: () => void) {
   await supabase.auth.signOut()
 }
 
-let bootstrapStarted = false
-
 function bootstrapAuth() {
-  if (bootstrapStarted) return
-  bootstrapStarted = true
-
-  const { setUser, setLoading, reset } = useAuthStore.getState()
+  const { initialized, setInitialized, setUser, setLoading, reset } = useAuthStore.getState()
+  if (initialized) return
+  setInitialized()
 
   void (async () => {
     try {
