@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -71,13 +71,7 @@ export function AdminProjects() {
     <PageWrapper>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <Link to="/admin" className="inline-flex items-center gap-1 font-display text-sm font-semibold text-text-secondary hover:text-accent transition-colors">
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-              <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Dashboard
-          </Link>
-          <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl">Manage Projects</h1>
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl">Manage Projects</h1>
         </div>
         <Button
           onClick={() => {

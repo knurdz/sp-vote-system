@@ -109,6 +109,7 @@ function CvSettingsPanel() {
         const local = new Date(date.getTime() - offset * 60_000)
         return local.toISOString().slice(0, 16)
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStart(formatToLocalValue(settings.cv_upload_start))
       setDeadline(formatToLocalValue(settings.cv_upload_deadline))
     }

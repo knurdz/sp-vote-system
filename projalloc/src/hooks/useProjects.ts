@@ -58,14 +58,16 @@ if (import.meta.env.DEV) {
 export function useProjects(filter?: ProjectStatus | 'all') {
   const [projects, setProjects] = useState<Project[]>([])
   const [assignedTeams, setAssignedTeams] = useState<Record<string, AssignedTeamInfo>>({})
+  const [voteCounts, setVoteCounts] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const fetchProjects = useCallback(async () => {
-    const { data, error: err } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false })
+    // Attempt to fetch project vote counts using security definer RPC (works for anon users)
+    const [{ data, error: err }, rpcResult] = await Promise.all([
+      supabase.from('projects').select('*').order('created_at', { ascending: false }),
+      supabase.rpc('get_project_vote_counts'),
+    ])
 
     if (err) {
       setError(err.message)
@@ -85,15 +87,33 @@ export function useProjects(filter?: ProjectStatus | 'all') {
         ? allMerged.filter((p) => p.status === filter)
         : allMerged
 
+    const counts: Record<string, number> = {}
+
+    if (rpcResult.error) {
+      console.warn('[useProjects] RPC failed, falling back to direct table select:', rpcResult.error.message)
+      // Fallback: direct select (only works for authenticated users or if public SELECT policy exists)
+      const { data: directVotes } = await supabase.from('votes').select('project_id')
+      for (const v of (directVotes ?? []) as { project_id: string }[]) {
+        counts[v.project_id] = (counts[v.project_id] ?? 0) + 1
+      }
+    } else if (rpcResult.data) {
+      for (const row of rpcResult.data as { project_id: string; vote_count: number }[]) {
+        counts[row.project_id] = row.vote_count
+      }
+    }
+
     setProjects(filtered)
+    setVoteCounts(counts)
     setAssignedTeams(await fetchAssignedTeams(normalized))
     setError(null)
     setLoading(false)
   }, [filter])
 
+
+
   usePolling(fetchProjects, [filter])
 
-  return { projects, assignedTeams, loading, error, refetch: fetchProjects }
+  return { projects, assignedTeams, voteCounts, loading, error, refetch: fetchProjects }
 }
 
 export function useProject(id: string | undefined) {

@@ -83,6 +83,7 @@ export function Navbar() {
 
   const showAdminEmail = isAdmin && !!email && !!teamName
   const displayInitials = getInitials(teamName ?? primaryLabel)
+  const googleAvatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture
 
   return (
     <>
@@ -125,8 +126,17 @@ export function Navbar() {
             <ThemeToggle />
             {user ? (
               <div className="flex items-center gap-1.5 rounded-xl border border-border/50 bg-bg-elevated/20 p-1 xl:gap-3 xl:bg-bg-elevated/30 xl:px-3 xl:py-2">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/25 bg-accent/10 font-display text-[11px] font-bold text-accent shadow-[0_0_10px_var(--accent-glow)] xl:h-9 xl:w-9">
-                  {displayInitials}
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent/25 bg-accent/10 font-display text-[11px] font-bold text-accent shadow-[0_0_10px_var(--accent-glow)] xl:h-9 xl:w-9 overflow-hidden">
+                  {googleAvatarUrl ? (
+                    <img
+                      src={googleAvatarUrl}
+                      alt="Profile"
+                      className="h-full w-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    displayInitials
+                  )}
                 </div>
 
                 <div className="hidden min-w-0 xl:block">

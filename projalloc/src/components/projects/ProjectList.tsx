@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { ProjectCard } from './ProjectCard'
 import { Alert } from '@/components/ui/Alert'
 import { ProjectCardSkeleton } from '@/components/ui/Skeleton'
@@ -9,10 +9,15 @@ interface ProjectListProps {
   projects: Project[]
   loading: boolean
   error: string | null
+  layout?: 'grid' | 'list'
   emptyMessage?: string
   emptyDescription?: string
   assignedTeams?: Record<string, AssignedTeamInfo>
   showAdminEmail?: boolean
+  /** The project ID that the current leader's team has voted for, if any */
+  votedProjectId?: string | null
+  /** Map of projectId → total votes cast */
+  voteCounts?: Record<string, number>
 }
 
 function EmptyIllustration() {
@@ -35,17 +40,19 @@ export function ProjectList({
   projects,
   loading,
   error,
+  layout = 'grid',
   emptyMessage = 'No projects here yet',
   emptyDescription = 'Projects will appear here once an admin adds them.',
   assignedTeams = {},
   showAdminEmail = false,
+  votedProjectId = null,
+  voteCounts = {},
 }: ProjectListProps) {
   const sorted = useMemo(() => sortProjectsByStatus(projects), [projects])
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className={layout === 'grid' ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" : "flex flex-col gap-4"}>
         {Array.from({ length: 6 }).map((_, i) => (
           <ProjectCardSkeleton key={i} />
         ))}
@@ -59,27 +66,26 @@ export function ProjectList({
 
   if (projects.length === 0) {
     return (
-      <div className="rounded-card border border-border bg-bg-surface/50 backdrop-blur-md py-20 text-center shadow-panel">
+      <div className="rounded-2xl border border-border bg-white dark:bg-[#14120B] py-16 text-center shadow-panel">
         <EmptyIllustration />
-        <p className="font-display font-semibold text-text-primary text-[17px]">{emptyMessage}</p>
-        <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">{emptyDescription}</p>
+        <p className="font-display font-bold text-text-primary text-[15px] uppercase tracking-wide">{emptyMessage}</p>
+        <p className="mx-auto mt-2 max-w-md text-xs text-text-secondary">{emptyDescription}</p>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 grid-flow-row-dense gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <div className={layout === 'grid' ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" : "flex flex-col gap-4"}>
       {sorted.map((project, index) => (
         <ProjectCard
           key={project.id}
           project={project}
-          featured={project.status === 'voting'}
           assignedTeam={assignedTeams[project.id]}
           showAdminEmail={showAdminEmail}
           index={index}
-          hoveredIndex={hoveredIndex}
-          onHoverStart={setHoveredIndex}
-          onHoverEnd={() => setHoveredIndex(null)}
+          layout={layout}
+          myVote={votedProjectId === project.id}
+          voteCount={voteCounts[project.id] ?? 0}
         />
       ))}
     </div>
