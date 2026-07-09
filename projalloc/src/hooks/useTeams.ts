@@ -52,6 +52,7 @@ export function useUserTeam(email: string | undefined, role: Role | null) {
   }, [email, role])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchTeam()
   }, [fetchTeam])
 

@@ -1,7 +1,7 @@
 const styles = {
   error: 'border-red/30 bg-red/10 text-red',
   info: 'border-accent/30 bg-accent-glow text-accent-hover',
-  success: 'border-green/30 bg-green/10 text-green',
+  success: 'border-accent/30 bg-accent/10 text-accent',
 }
 
 interface AlertProps {

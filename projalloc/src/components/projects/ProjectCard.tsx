@@ -1,319 +1,293 @@
-import { useRef, type MouseEvent, type PointerEvent, type TouchEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { Badge } from '@/components/ui/Badge'
 import { Countdown } from '@/components/ui/Countdown'
-import { STATUS_LABELS, cn } from '@/lib/utils'
-import type { AssignedTeamInfo, Project, ProjectStatus } from '@/types'
+import { cn } from '@/lib/utils'
+import type { AssignedTeamInfo, Project } from '@/types'
 
 interface ProjectCardProps {
   project: Project
-  featured?: boolean
   assignedTeam?: AssignedTeamInfo
   showAdminEmail?: boolean
   index: number
-  hoveredIndex: number | null
-  onHoverStart: (index: number) => void
-  onHoverEnd: () => void
-}
-
-const STATUS_STYLES: Record<
-  ProjectStatus,
-  { top: string; hoverBorder: string; hoverTitle: string; border?: string; hoverShadow: string }
-> = {
-  voting: {
-    top: 'from-accent/80 via-accent/40 to-transparent',
-    hoverBorder: 'hover:border-accent/30',
-    hoverTitle: 'group-hover:text-accent',
-    border: 'border-accent/15',
-    hoverShadow: 'hover:shadow-[0_12px_36px_-4px_rgba(0,0,0,0.18),0_0_24px_rgba(0,201,120,0.08)]',
-  },
-  upcoming: {
-    top: 'from-yellow/80 via-yellow/30 to-transparent',
-    hoverBorder: 'hover:border-yellow/30',
-    hoverTitle: 'group-hover:text-yellow',
-    border: 'border-yellow/15',
-    hoverShadow: 'hover:shadow-[0_12px_36px_-4px_rgba(0,0,0,0.18),0_0_24px_rgba(245,158,11,0.08)]',
-  },
-  closed: {
-    top: 'from-gray/60 via-gray/20 to-transparent',
-    hoverBorder: 'hover:border-border/80',
-    hoverTitle: 'group-hover:text-text-primary',
-    border: 'border-border',
-    hoverShadow: 'hover:shadow-[0_12px_36px_-4px_rgba(0,0,0,0.18)]',
-  },
-  assigned: {
-    top: 'from-status-assigned/80 via-status-assigned/40 to-transparent',
-    hoverBorder: 'hover:border-status-assigned/30',
-    hoverTitle: 'group-hover:text-status-assigned',
-    border: 'border-status-assigned/15',
-    hoverShadow: 'hover:shadow-[0_12px_36px_-4px_rgba(0,0,0,0.18),0_0_24px_rgba(59,130,246,0.08)]',
-  },
+  layout?: 'grid' | 'list'
+  /** True when the current leader's team has voted for this project */
+  myVote?: boolean
+  /** Total number of votes cast for this project */
+  voteCount?: number
 }
 
 export function ProjectCard({
   project,
   assignedTeam,
-  index,
-  hoveredIndex,
-  onHoverStart,
-  onHoverEnd,
+  layout = 'grid',
+  myVote = false,
+  voteCount = 0,
 }: ProjectCardProps) {
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase()
+  }
+
   const isVoting = project.status === 'voting'
   const isAssigned = project.status === 'assigned'
-  const styles = STATUS_STYLES[project.status]
+  const isClosed = project.status === 'closed'
+  const isUpcoming = project.status === 'upcoming'
 
-  // Shifting helper logic for when the last card in a row is expanded
-  const isHovered = hoveredIndex === index
-  const isLeftNeighbor = hoveredIndex !== null && index === hoveredIndex - 1
-  const isHoveredCol5 = hoveredIndex !== null && hoveredIndex % 5 === 4
-  const isHoveredCol4 = hoveredIndex !== null && hoveredIndex % 4 === 3
-  const isHoveredCol3 = hoveredIndex !== null && hoveredIndex % 3 === 2
+  /** "Your Vote" badge — shown in the top-right corner of the card */
+  const MyVoteBadge = myVote ? (
+    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/12 border border-emerald-500/30 px-2 py-0.5 text-[9px] font-display font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+      <svg className="h-2.5 w-2.5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+      </svg>
+      Your Vote
+    </span>
+  ) : null
 
-  const isSelfCol5 = index % 5 === 4
-  const isSelfCol4 = index % 4 === 3
-  const isSelfCol3 = index % 3 === 2
-  const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
-  const suppressClickRef = useRef(false)
-
-  const toggleMobileDetails = () => {
-    suppressClickRef.current = true
-
-    if (isHovered) {
-      onHoverEnd()
-    } else {
-      onHoverStart(index)
-    }
-  }
-
-  const isSwipe = (deltaX: number, deltaY: number) =>
-    Math.abs(deltaX) >= 42 && Math.abs(deltaX) > Math.abs(deltaY) * 1.15
-
-  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (window.innerWidth >= 640 || event.pointerType === 'touch') return
-
-    pointerStartRef.current = { x: event.clientX, y: event.clientY }
-    suppressClickRef.current = false
-  }
-
-  const handlePointerUp = (event: PointerEvent<HTMLDivElement>) => {
-    const start = pointerStartRef.current
-    pointerStartRef.current = null
-
-    if (!start || window.innerWidth >= 640 || event.pointerType === 'touch') return
-
-    const deltaX = event.clientX - start.x
-    const deltaY = event.clientY - start.y
-
-    if (!isSwipe(deltaX, deltaY)) return
-
-    event.preventDefault()
-    toggleMobileDetails()
-  }
-
-  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (window.innerWidth >= 640) return
-
-    const touch = event.touches[0]
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
-    suppressClickRef.current = false
-  }
-
-  const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
-    const start = touchStartRef.current
-    const touch = event.changedTouches[0]
-    touchStartRef.current = null
-
-    if (!start || !touch || window.innerWidth >= 640) return
-
-    const deltaX = touch.clientX - start.x
-    const deltaY = touch.clientY - start.y
-
-    if (!isSwipe(deltaX, deltaY)) return
-
-    event.preventDefault()
-    toggleMobileDetails()
-  }
-
-  const handleLinkClickCapture = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (!suppressClickRef.current) return
-
-    event.preventDefault()
-    suppressClickRef.current = false
-  }
-
-  return (
-    <div
-      data-project-card-index={index}
-      className={cn(
-        "flip-card-container w-full relative",
-        // Shifting classes for left neighbors of hovered last-column cards
-        isLeftNeighbor && isHoveredCol5 && "xl:shift-col-1",
-        isLeftNeighbor && isHoveredCol4 && "lg:shift-col-1 xl:col-start-auto",
-        isLeftNeighbor && isHoveredCol3 && "md:shift-col-1 lg:col-start-auto",
-        // Expansion classes for the hovered card itself
-        isHovered && "expanded-card is-hovered",
-        isHovered && isSelfCol5 && "xl:expanded-card-left-5n",
-        isHovered && isSelfCol4 && "lg:expanded-card-left-4n xl:expanded-card-left-auto",
-        isHovered && isSelfCol3 && "md:expanded-card-left-3n lg:expanded-card-left-auto"
-      )}
-      onMouseLeave={onHoverEnd}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={() => {
-        pointerStartRef.current = null
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={() => {
-        touchStartRef.current = null
-      }}
-    >
-      <div
+  if (layout === 'list') {
+    return (
+      <Link
+        to={`/project/${project.id}`}
         className={cn(
-          "flip-card w-full h-full card shadow-panel transition-all duration-300",
-          styles.border,
-          styles.hoverBorder,
-          styles.hoverShadow
+          "relative flex flex-col md:flex-row md:items-center justify-between rounded-2xl border bg-white dark:bg-[#14120B] py-5 px-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] gap-6 cursor-pointer",
+          myVote
+            ? "border-emerald-400/60 dark:border-emerald-500/40 hover:border-emerald-400 dark:hover:border-emerald-500/70 ring-1 ring-emerald-400/20 dark:ring-emerald-500/15"
+            : "border-slate-200/80 dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700"
         )}
       >
-        <Link
-          to={`/project/${project.id}`}
-          className="block w-full h-full relative"
-          onClickCapture={handleLinkClickCapture}
-        >
-          {/* Hover hotspot trigger to prevent accidental edge-hovers from expanding card */}
-          {!isHovered && (
-            <div
-              className="absolute inset-0 m-auto w-[55%] h-[55%] z-30"
-              onMouseEnter={() => onHoverStart(index)}
-            />
-          )}
-          <div className="flip-card-inner">
-            
-            {/* FRONT FACE: Name and Company */}
-            <div className="flip-card-front">
-              <article
-                className="relative flex h-full flex-col justify-between overflow-hidden rounded-xl p-4 sm:p-5"
-              >
-                {/* Colored top gradient line */}
-                <div
-                  className={cn('absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r rounded-t-xl', styles.top)}
-                  aria-hidden
-                />
-  
-                {/* Top Row: Company */}
-                <div className="flex items-center justify-center gap-3 w-full mt-1.5">
-                  <p className="font-mono text-[9.5px] font-bold uppercase tracking-[0.15em] text-text-muted truncate flex-1 text-center">
-                    {project.company}
-                  </p>
-                </div>
-  
-                {/* Title Center */}
-                <div className="flex-1 flex flex-col justify-center my-2 text-center">
-                  <h3
-                    className={cn(
-                      'font-display font-bold leading-snug text-text-primary tracking-tight text-center uppercase text-[15px] sm:text-[16px] line-clamp-3',
-                      styles.hoverTitle
-                    )}
-                  >
-                    {project.title}
-                  </h3>
-                </div>
-
-                <p className="sm:hidden text-center font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-text-muted">
-                  Slide for more details
-                </p>
-  
-              </article>
-            </div>
-  
-            {/* BACK FACE: Detailed Information */}
-            <div className="flip-card-back">
-              <article
-                className="relative flex h-full flex-col justify-between overflow-hidden rounded-xl p-5 sm:p-6"
-              >
-                {/* Colored top gradient line */}
-                <div
-                  className={cn('absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r rounded-t-xl', styles.top)}
-                  aria-hidden
-                />
-  
-                {/* Header & Title */}
-                <div className="relative flex flex-col items-center">
-                  <div className="flex items-center justify-center w-full mt-1">
-                    <p className="font-mono text-[9.5px] font-bold uppercase tracking-[0.15em] text-text-muted truncate text-center w-full px-12">
-                      {project.company}
-                    </p>
-                    <Badge variant={project.status} className="shrink-0 scale-90 absolute right-0 top-0 origin-top-right">
-                      {STATUS_LABELS[project.status]}
-                    </Badge>
-                  </div>
-                  
-                  <h4 className="font-display font-black leading-tight text-text-primary tracking-tight text-center uppercase text-[17px] sm:text-[19px] mt-3">
-                    {project.title}
-                  </h4>
-                  <div className="w-10 h-0.5 bg-accent/40 rounded mt-2.5 mb-3.5 mx-auto" />
-                </div>
-
-                {/* Description & Added Date */}
-                <div className="flex-1 text-center min-h-0 overflow-hidden mb-4 flex flex-col items-center">
-                  <p className="text-[13px] leading-relaxed text-text-secondary mb-3">
-                    {project.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-center gap-1.5 text-[10px] text-text-muted">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>Added {new Date(project.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                  </div>
-                </div>
-  
-                <div className="space-y-3.5">
-                  {/* Tech Stack */}
-                  {project.tech_stack.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 justify-center">
-                      {project.tech_stack.map((tech) => (
-                        <span
-                          key={tech}
-                          className="rounded-md border border-border bg-bg-surface/60 px-2.5 py-0.5 font-mono text-[9.5px] text-text-secondary hover:border-accent/30 transition-colors"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-    
-                  {/* Bottom metadata panel */}
-                  {((isAssigned && assignedTeam) || isVoting) && (
-                    <div className="w-full">
-                      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-bg-surface/30 px-3.5 py-2 w-full text-[11px] text-text-secondary">
-                        {isAssigned && assignedTeam ? (
-                          <div className="truncate flex-1 text-left">
-                            <span className="text-text-muted">Assigned: </span>
-                            <span className="font-display font-bold text-accent">{assignedTeam.name}</span>
-                          </div>
-                        ) : (
-                          <div className="flex-1" />
-                        )}
-    
-                        {isVoting && (
-                          <Countdown
-                            deadline={project.voting_deadline}
-                            className="w-fit rounded-lg bg-accent/8 border border-accent/15 px-2 py-0.5 font-mono text-[10px] font-bold text-accent shrink-0"
-                          />
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </article>
-            </div>
-  
+        {/* "Your Vote" — top-right corner */}
+        {myVote && (
+          <div className="absolute top-3 right-4">
+            {MyVoteBadge}
           </div>
-        </Link>
+        )}
+
+        {/* Left: Avatar, Title & Subtitle */}
+        <div className="flex items-center gap-3.5 shrink-0">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-50 dark:bg-bg-elevated/40 border border-slate-200 dark:border-border/40 text-slate-700 dark:text-text-primary font-display text-sm font-bold tracking-wider">
+            {getInitials(project.company)}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <h3 className="truncate font-display text-sm font-bold text-slate-800 dark:text-text-primary uppercase tracking-tight">
+                {project.title}
+              </h3>
+              {isVoting && (
+                <svg className="h-4 w-4 text-blue-600 dark:text-blue-500 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                </svg>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[11px] font-mono font-semibold text-slate-500 dark:text-text-secondary">{project.company}</span>
+              <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-zinc-700" />
+              <span className={cn(
+                "text-[10px] font-display font-bold uppercase tracking-wider",
+                isVoting ? "text-emerald-600 dark:text-emerald-500" : isUpcoming ? "text-amber-500" : "text-slate-400 dark:text-text-muted"
+              )}>
+                {isUpcoming ? 'Upcoming' : isVoting ? 'Active' : isClosed ? 'Closed' : 'Matched'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Middle: Description excerpt */}
+        <p className="text-xs text-slate-500 dark:text-[#9ab5a6] leading-relaxed flex-1 line-clamp-2 md:px-4">
+          {project.description}
+        </p>
+
+        {/* Middle-Right: Compact Metrics */}
+        <div className="flex items-center divide-x divide-slate-200 dark:divide-zinc-800/80 px-2 shrink-0">
+          <div className="px-4 text-center">
+            <p className="truncate text-sm font-display font-bold text-slate-800 dark:text-text-primary max-w-32">
+              {voteCount} {voteCount === 1 ? 'Vote' : 'Votes'}
+            </p>
+            <p className="font-display text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#9ab5a6]/60 mt-0.5">
+              VOTES CAST
+            </p>
+          </div>
+          <div className="px-4 text-center">
+            <p className="text-sm font-display font-bold text-slate-800 dark:text-text-primary">
+              {new Date(project.voting_deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            </p>
+            <p className="font-display text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#9ab5a6]/60 mt-0.5">
+              DEADLINE
+            </p>
+          </div>
+        </div>
+
+        {/* Far Right: Buttons & Status Footer */}
+        <div className="flex flex-col md:flex-row items-center gap-4 shrink-0">
+          
+          <div className="text-center md:text-right shrink-0">
+            {isVoting ? (
+              <div className="flex items-center justify-center md:justify-end gap-1.5 text-[10px] font-semibold text-rose-500 dark:text-rose-400">
+                <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <circle cx="12" cy="12" r="10" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+                </svg>
+                <span>Closes:</span>
+                <Countdown deadline={project.voting_deadline} className="font-mono font-bold" />
+              </div>
+            ) : isAssigned && assignedTeam ? (
+              <div className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-500 truncate max-w-32">
+                Assigned to: <span className="font-bold">{assignedTeam.name}</span>
+              </div>
+            ) : isClosed ? (
+              <div className="text-[10px] font-semibold text-rose-500 dark:text-rose-400">
+                Voting Closed
+              </div>
+            ) : (
+              <div className="text-[10px] font-semibold text-amber-500">
+                Opens {new Date(project.voting_deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center">
+            <div
+              className="inline-flex h-9 px-4 items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#14120B] text-slate-600 dark:text-[#9ab5a6] hover:bg-slate-50 dark:hover:bg-zinc-800/40 hover:text-slate-800 dark:hover:text-text-primary transition-colors text-xs font-display font-bold cursor-pointer"
+              title="View Details"
+            >
+              <svg className="h-4 w-4 shrink-0 text-slate-500 dark:text-[#9ab5a6]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.25">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <span>View Details</span>
+            </div>
+          </div>
+
+        </div>
+      </Link>
+    )
+  }
+
+  // grid card wrapper
+  return (
+    <Link
+      to={`/project/${project.id}`}
+      className={cn(
+        "relative flex flex-col justify-between rounded-2xl border bg-white dark:bg-[#14120B] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] cursor-pointer",
+        myVote
+          ? "border-emerald-400/60 dark:border-emerald-500/40 hover:border-emerald-400 dark:hover:border-emerald-500/70 ring-1 ring-emerald-400/20 dark:ring-emerald-500/15"
+          : "border-slate-200/80 dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700"
+      )}
+    >
+      {/* "Your Vote" — absolute top-right corner */}
+      {myVote && (
+        <div className="absolute top-3.5 right-4">
+          {MyVoteBadge}
+        </div>
+      )}
+
+      {/* Top Header Section */}
+      <div className="space-y-4">
+        
+        {/* Avatar & Title Row */}
+        <div className="flex items-center gap-3.5">
+          {/* Company Initials Avatar */}
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-50 dark:bg-bg-elevated/40 border border-slate-200 dark:border-border/40 text-slate-700 dark:text-text-primary font-display text-sm font-bold tracking-wider">
+            {getInitials(project.company)}
+          </div>
+ 
+          {/* Title and Company Subtitle */}
+          <div className="min-w-0 flex-1 pr-2">
+            <div className="flex items-center gap-1.5">
+              <h3 className="truncate font-display text-sm font-semibold text-slate-800 dark:text-text-primary uppercase tracking-tight">
+                {project.title}
+              </h3>
+              {isVoting && (
+                <svg className="h-4 w-4 text-blue-600 dark:text-blue-500 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                </svg>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[11px] font-mono font-semibold text-slate-500 dark:text-text-secondary">{project.company}</span>
+              <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-zinc-700" />
+              <span className={cn(
+                "text-[10px] font-display font-bold uppercase tracking-wider",
+                isVoting ? "text-emerald-600 dark:text-emerald-500" : isUpcoming ? "text-amber-500" : "text-slate-400 dark:text-text-muted"
+              )}>
+                {isUpcoming ? 'Upcoming' : isVoting ? 'Active' : isClosed ? 'Closed' : 'Matched'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Project Description excerpt */}
+        <p className="text-xs text-slate-500 dark:text-[#9ab5a6] leading-relaxed line-clamp-2 min-h-8">
+          {project.description}
+        </p>
+
+        {/* Minimal Inner Metrics Box */}
+        <div className="grid grid-cols-2 rounded-xl border border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-bg-elevated/10 divide-x divide-slate-200 dark:divide-zinc-800/80 py-2.5">
+          <div className="text-center">
+            <p className="text-[13px] font-display font-bold text-slate-800 dark:text-text-primary px-2">
+              {voteCount} {voteCount === 1 ? 'Vote' : 'Votes'}
+            </p>
+            <p className="font-display text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#9ab5a6]/60 mt-0.5">
+              VOTES CAST
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-[13px] font-display font-bold text-slate-800 dark:text-text-primary px-2">
+              {new Date(project.voting_deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            </p>
+            <p className="font-display text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#9ab5a6]/60 mt-0.5">
+              DEADLINE
+            </p>
+          </div>
+        </div>
+
       </div>
-    </div>
+
+      {/* Action Row */}
+      <div className="mt-5 space-y-3">
+        
+        {/* Full-width Details button wrapper */}
+        <div
+          className="w-full inline-flex h-10 items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#14120B] text-slate-600 dark:text-[#9ab5a6] hover:bg-slate-50 dark:hover:bg-zinc-800/40 hover:text-slate-800 dark:hover:text-text-primary transition-colors text-xs font-display font-semibold cursor-pointer"
+          title="View Details"
+        >
+          <svg className="h-4 w-4 shrink-0 text-slate-500 dark:text-[#9ab5a6]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.25">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          <span>View Details</span>
+        </div>
+
+        {/* Status text at bottom */}
+        <div className="pt-1 text-center">
+          {isVoting ? (
+            <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-rose-500 dark:text-rose-400">
+              <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="12" cy="12" r="10" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+              </svg>
+              <span>Closes in:</span>
+              <Countdown deadline={project.voting_deadline} className="font-mono font-bold" />
+            </div>
+          ) : isAssigned && assignedTeam ? (
+            <div className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-500 truncate">
+              Assigned to: <span className="font-bold">{assignedTeam.name}</span>
+            </div>
+          ) : isClosed ? (
+            <div className="text-[11px] font-semibold text-rose-500 dark:text-rose-400">
+              Voting Closed
+            </div>
+          ) : (
+            <div className="text-[11px] font-semibold text-amber-500">
+              Opens {new Date(project.voting_deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+            </div>
+          )}
+        </div>
+
+      </div>
+
+    </Link>
   )
 }

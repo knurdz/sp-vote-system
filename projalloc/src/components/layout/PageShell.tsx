@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom'
+import { cn } from '@/lib/utils'
 
 interface PageShellProps {
   children: React.ReactNode
@@ -6,13 +6,11 @@ interface PageShellProps {
 }
 
 export function PageShell({ children, className }: PageShellProps) {
-  const { pathname } = useLocation()
-  const reserveMobileNavSpace = pathname !== '/login'
-
   return (
-    <div className={`page-glow relative min-h-screen bg-bg-base bg-theme-bg bg-cover bg-center bg-fixed bg-no-repeat ${className ?? ''}`}>
-      <div className="board-side-glow hidden xl:block" aria-hidden />
-      <div className={`relative z-10 flex min-h-screen flex-col ${reserveMobileNavSpace ? 'pb-28 xl:pb-0' : ''}`}>{children}</div>
+    <div className={cn("relative min-h-screen flex flex-col bg-[#F4F7FC] dark:bg-[#050914] text-text-primary transition-colors duration-200", className)}>
+      <div className="flex-1 flex flex-col min-h-screen relative z-10">
+        {children}
+      </div>
     </div>
   )
 }

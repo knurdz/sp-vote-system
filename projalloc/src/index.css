@@ -1,58 +1,60 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@500&display=swap');
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root,
 [data-theme='dark'] {
-  /* HSL Primary Scale (Emerald #34D399) */
-  --primary-50: 158 95% 95%;
-  --primary-100: 158 95% 87%;
-  --primary-200: 158 95% 74%;
-  --primary-300: 158 95% 61%;
-  --primary-400: 158 95% 50%;
-  --primary-500: 158 64% 52%; /* #34D399 */
-  --primary-600: 158 64% 46%;
-  --primary-700: 158 64% 38%;
-  --primary-800: 158 64% 30%;
-  --primary-900: 158 64% 22%;
-  --primary-950: 158 64% 14%;
+  /* HSL Primary Scale (Blue #2563eb) */
+  --primary-50: 221 83% 95%;
+  --primary-100: 221 83% 87%;
+  --primary-200: 221 83% 74%;
+  --primary-300: 221 83% 61%;
+  --primary-400: 221 83% 50%;
+  --primary-500: 221 83% 53%; /* #2563eb */
+  --primary-600: 221 83% 46%;
+  --primary-700: 221 83% 38%;
+  --primary-800: 221 83% 30%;
+  --primary-900: 221 83% 22%;
+  --primary-950: 221 83% 14%;
 
-  /* Background Image (Dark Forest Starry Sky) */
-  --bg-image: url('./assets/dark-bg.jpg');
+  /* Background Image (Disabled for clean Cursor dark theme) */
+  --bg-image: none;
 
-  /* Dark Theme Semantics (Dark Forest Theme) */
-  --bg-base: #07120D;
-  --bg-header: rgba(17, 25, 40, 0.11);
-  --bg-surface: rgba(17, 25, 40, 0.11);
-  --bg-elevated: rgba(17, 25, 40, 0.11);
-  --border: rgba(255, 255, 255, 0.125);
-  --accent: #36F2A1;
-  --accent-hover: #6EE7B7;
-  --accent-glow: rgba(54, 242, 161, 0.12);
-  --text-primary: #F2FFF7;
-  --text-secondary: #DDF2E6;
-  --text-muted: #9AB5A6;
-  --green: #36F2A1;
+  /* Dark Theme Semantics (Cursor.com Warm Dark Theme) */
+  --bg-base: #14120B;
+  --bg-header: rgba(20, 18, 11, 0.85);
+  --bg-surface: #1B1912;
+  --bg-elevated: #221F16;
+  --border: rgba(237, 236, 236, 0.08);
+  --accent: #edecec;
+  --accent-hover: #f7f7f4;
+  --accent-glow: rgba(237, 236, 236, 0.06);
+  --text-primary: #edecec;
+  --text-secondary: rgba(237, 236, 236, 0.75);
+  --text-muted: rgba(237, 236, 236, 0.45);
+  --green: #22c55e;
   --yellow: #F4D35E;
-  --gray: #9AB5A6;
+  --gray: rgba(237, 236, 236, 0.45);
   --red: #FF6B6B;
-  --status-voting: #36F2A1;
+  --status-voting: #3b82f6;
   --status-upcoming: #F4D35E;
   --status-closed: #FF6B6B;
   --status-assigned: #38D5FF;
 
   /* Card Glassmorphism Variables */
-  --card-bg: rgba(17, 25, 40, 0.11);
-  --card-border: rgba(255, 255, 255, 0.125);
+  --card-bg: #1B1912;
+  --card-border: rgba(237, 236, 236, 0.08);
   --card-backdrop-filter: blur(14px) saturate(63%);
 
   /* Ambient Details & Shadows */
-  --page-glow-color: rgba(52, 211, 153, 0.05);
-  --side-glow-green: rgba(163, 230, 53, 0.06);
-  --side-glow-blue: rgba(52, 211, 153, 0.04);
-  --side-glow-fade: rgba(52, 211, 153, 0.01);
-  --grid-color: rgba(110, 231, 183, 0.025);
-  --panel-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* shadow-lg */
+  --page-glow-color: rgba(237, 236, 236, 0.015);
+  --side-glow-green: rgba(237, 236, 236, 0.015);
+  --side-glow-blue: rgba(237, 236, 236, 0.015);
+  --side-glow-fade: rgba(237, 236, 236, 0.005);
+  --grid-color: rgba(237, 236, 236, 0.012);
+  --panel-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
   color-scheme: dark;
 }
 
@@ -82,26 +84,26 @@
   --bg-surface: rgba(255, 255, 255, 0.75);
   --bg-elevated: rgba(241, 245, 249, 0.85);
   --border: rgba(15, 23, 42, 0.08);
-  --accent: #00A862;
-  --accent-hover: #00C978;
-  --accent-glow: rgba(0, 168, 98, 0.08);
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-glow: rgba(37, 99, 235, 0.08);
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-muted: #94a3b8;
-  --green: #00A862;
+  --green: #2563eb;
   --yellow: #d97706;
   --gray: #34748b;
   --red: #dc2626;
-  --status-voting: #00A862;
+  --status-voting: #2563eb;
   --status-upcoming: #d97706;
   --status-closed: #34748b;
   --status-assigned: #2563eb;
 
   /* Ambient Details & Shadows */
-  --page-glow-color: rgba(0, 168, 98, 0.05);
-  --side-glow-green: rgba(0, 168, 98, 0.05);
+  --page-glow-color: rgba(37, 99, 235, 0.05);
+  --side-glow-green: rgba(37, 99, 235, 0.05);
   --side-glow-blue: rgba(37, 99, 235, 0.03);
-  --side-glow-fade: rgba(0, 168, 98, 0.01);
+  --side-glow-fade: rgba(37, 99, 235, 0.01);
   --grid-color: rgba(15, 23, 42, 0.025);
   --panel-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.05), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5);
   color-scheme: light;
@@ -115,7 +117,7 @@
 @theme {
   --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-display: 'Outfit', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-mono: 'Plus Jakarta Sans', system-ui, sans-serif;
 
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
@@ -170,7 +172,7 @@ select option {
 }
 
 .font-mono {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
 }
 
 .page-glow {

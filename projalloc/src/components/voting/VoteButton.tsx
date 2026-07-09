@@ -60,7 +60,7 @@ export function VoteButton({ projectId, votingOpen }: VoteButtonProps) {
       return (
         <Alert
           variant="error"
-          message="Voting locked. Your team is ineligible to vote because no CV ZIP archive was uploaded before the deadline."
+          message="Voting locked. Your team is ineligible to vote because CV ZIP archive was not uploaded before the deadline."
         />
       )
     }
@@ -83,7 +83,7 @@ export function VoteButton({ projectId, votingOpen }: VoteButtonProps) {
             disabled={actionLoading}
             onClick={() => void withdraw()}
           >
-            {actionLoading ? 'Removing vote…' : 'Undo our vote'}
+            {actionLoading ? 'Withdrawing vote…' : 'Withdraw our vote'}
           </Button>
         </>
       ) : (

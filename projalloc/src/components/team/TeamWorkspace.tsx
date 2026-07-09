@@ -40,7 +40,7 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
     }
   }, [])
 
-  const processFile = async (file: File) => {
+  const processFile = useCallback(async (file: File) => {
     setError(null)
     setSuccess(null)
 
@@ -85,8 +85,8 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
       const uniqueName = `${team.id}/${Date.now()}_${file.name}`
       
       const { data, error: uploadErr } = await supabase.storage
-        .from('cvs')
-        .upload(uniqueName, file, { cacheControl: '3600', upsert: true })
+          .from('cvs')
+          .upload(uniqueName, file, { cacheControl: '3600', upsert: true })
 
       if (uploadErr) {
         throw new Error(`Storage Upload Failed: ${uploadErr.message}`)
@@ -99,9 +99,9 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
 
       // 3. Update database
       const { error: dbErr } = await supabase
-        .from('teams')
-        .update({ cv_url: data.path })
-        .eq('id', team.id)
+          .from('teams')
+          .update({ cv_url: data.path })
+          .eq('id', team.id)
 
       if (dbErr) {
         throw new Error(`Database Update Failed: ${dbErr.message}`)
@@ -114,7 +114,7 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
     } finally {
       setUploading(false)
     }
-  }
+  }, [team.id, team.cv_url, onUpdate])
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -126,7 +126,7 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       void processFile(e.dataTransfer.files[0])
     }
-  }, [team.id, isClosed, isNotStarted, team.cv_url])
+  }, [isClosed, isNotStarted, processFile])
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -139,8 +139,8 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
 
     try {
       const { data, error: downloadErr } = await supabase.storage
-        .from('cvs')
-        .createSignedUrl(team.cv_url, 60)
+          .from('cvs')
+          .createSignedUrl(team.cv_url, 60)
 
       if (downloadErr) throw downloadErr
       if (data?.signedUrl) {
@@ -166,9 +166,9 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
 
       // 2. Update Database
       const { error: dbErr } = await supabase
-        .from('teams')
-        .update({ cv_url: null })
-        .eq('id', team.id)
+          .from('teams')
+          .update({ cv_url: null })
+          .eq('id', team.id)
 
       if (dbErr) throw dbErr
 
@@ -192,232 +192,319 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
 
   if (settingsLoading) {
     return (
-      <div className="panel p-6 flex justify-center items-center bg-bg-surface/30 backdrop-blur-md border border-border/80 rounded-2xl">
+      <div className="rounded-3xl border border-border bg-white dark:bg-[#14120B] p-12 flex justify-center items-center">
         <Spinner />
       </div>
     )
   }
 
   return (
-    <section className="panel relative overflow-hidden p-6 sm:p-8 bg-bg-surface/30 backdrop-blur-md border border-border/80 rounded-2xl shadow-panel">
-      {/* Header section with glass banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-border/40 pb-6 mb-6">
-        <div>
-          <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-accent bg-accent/10 border border-accent/20 px-2 py-0.5 rounded-full">
-            Team Leader Workspace
-          </span>
-          <h2 className="mt-2 font-display text-2xl font-extrabold text-text-primary tracking-tight">
-            Team Workspace: {team.name}
-          </h2>
-          <p className="mt-1 text-xs text-text-secondary">
-            Leader Account: <span className="font-mono">{team.leader_email}</span>
-          </p>
-        </div>
-
-        {/* Timeline Status Display */}
-        {settings && (
-          <div className="shrink-0 flex items-center gap-3">
-            <span className={`inline-flex items-center rounded-lg px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider border ${
-              isClosed 
-                ? 'bg-red/8 text-red border-red/20 shadow-[0_2px_8px_rgba(255,107,107,0.06)]' 
-                : isNotStarted 
-                ? 'bg-yellow/8 text-yellow border-yellow/20 shadow-[0_2px_8px_rgba(244,211,94,0.06)]' 
-                : 'bg-accent/8 text-accent border-accent/20 shadow-[0_2px_8px_rgba(54,242,161,0.06)]'
-            }`}>
-              {isClosed ? 'Closed' : isNotStarted ? 'Upcoming' : 'Active'}
+    <div className="space-y-6">
+      {/* Redesigned Header: Premium Glassmorphic Card */}
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-white/70 dark:bg-[#14120B]/80 p-6 sm:p-8 backdrop-blur-md shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+        <div className="absolute top-0 right-0 h-40 w-40 bg-accent/5 rounded-full blur-3xl" />
+        
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-display font-extrabold tracking-wider bg-accent/10 border border-accent/20 text-accent uppercase">
+              Leader Workspace
             </span>
-            <div className="text-right">
-              <p className="text-[10px] text-text-muted font-mono leading-tight">
-                {isClosed 
-                  ? `Closed ${formatDateTime(settings.cv_upload_deadline)}` 
-                  : isNotStarted 
-                  ? `Opens ${formatDateTime(settings.cv_upload_start)}`
-                  : `Deadline: ${formatDateTime(settings.cv_upload_deadline)}`
-                }
-              </p>
+            <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight uppercase">
+              Team Workspace: {team.name}
+            </h1>
+            <div className="flex items-center gap-2 text-xs text-text-secondary">
+              <svg className="h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span>Leader Account: <span className="font-medium text-text-primary">{team.leader_email}</span></span>
             </div>
           </div>
-        )}
+
+          {/* Timeline Status Display */}
+          {settings && (
+            <div className="flex items-center gap-4 bg-bg-base/40 dark:bg-bg-base/20 border border-border/40 rounded-2xl p-4 shrink-0 shadow-sm">
+              <span className={`inline-flex items-center rounded-xl px-3 py-1.5 font-display text-[10px] font-bold uppercase tracking-wider border ${
+                isClosed 
+                  ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' 
+                  : isNotStarted 
+                  ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' 
+                  : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+              }`}>
+                {isClosed ? 'Closed' : isNotStarted ? 'Upcoming' : 'Active'}
+              </span>
+              <div className="space-y-0.5">
+                <p className="text-[10px] uppercase font-bold tracking-wider text-text-muted">
+                  Submission Window
+                </p>
+                <p className="text-xs font-semibold text-text-primary">
+                  {isClosed 
+                    ? `Closed ${formatDateTime(settings.cv_upload_deadline)}` 
+                    : isNotStarted 
+                    ? `Opens ${formatDateTime(settings.cv_upload_start)}`
+                    : `Deadline: ${formatDateTime(settings.cv_upload_deadline)}`
+                  }
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {settingsError && <div className="mb-4"><Alert message={`Failed to load timeline settings: ${settingsError}`} /></div>}
-      {error && <div className="mb-4"><Alert message={error} /></div>}
+      {settingsError && <Alert message={`Failed to load timeline settings: ${settingsError}`} />}
+      {error && <Alert message={error} />}
       {success && (
-        <div className="mb-4 rounded-xl border border-accent/20 bg-accent/5 p-4 text-xs font-medium text-accent">
-          {success}
+        <div className="rounded-2xl border border-blue-500/25 bg-blue-500/5 p-4 text-xs font-semibold text-blue-500 flex items-center gap-2">
+          <svg className="h-4.5 w-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{success}</span>
         </div>
       )}
 
-      {/* Main interactive area */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+      {/* Main content split */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* Left Column: Team Status Rules */}
-        <div className="lg:col-span-5 space-y-4 flex flex-col justify-between">
-          <div className="space-y-3">
-            <h3 className="font-display text-sm font-bold text-text-primary">Rules & Requirements:</h3>
-            <ul className="text-xs text-text-secondary space-y-2 list-disc pl-4 leading-relaxed">
-              <li>Upload a **single ZIP file** (`.zip`) containing CVs of all group members.</li>
-              <li>Maximum file size is **20MB**.</li>
-              <li>You can only upload or edit your archive within the active upload window.</li>
-              <li><strong className="text-text-primary">Ineligibility lock:</strong> You will be unable to vote on projects unless a CV ZIP is successfully uploaded before the deadline.</li>
-              <li>Voting opens only after the submission window closes.</li>
-            </ul>
-          </div>
-
-          <div className="rounded-xl bg-bg-base/40 border border-border/50 p-4 mt-4">
-            <h4 className="font-display text-xs font-bold text-text-primary mb-1">Voting Status:</h4>
-            {isClosed ? (
-              team.cv_url ? (
-                <p className="text-xs text-accent font-semibold flex items-center gap-1.5">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Eligible & Ready to Vote
-                </p>
-              ) : (
-                <p className="text-xs text-danger font-semibold flex items-center gap-1.5">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Locked — No CV Uploaded
-                </p>
-              )
-            ) : (
-              <p className="text-xs text-text-muted italic flex items-center gap-1.5 font-medium">
-                <svg className="h-4 w-4 text-text-muted shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                Waiting for Upload Window to Close
+        {/* Left Hand Column (Dropzone & interactive) */}
+        <div className="lg:col-span-7 space-y-6">
+          <div className="rounded-3xl border border-border bg-white dark:bg-[#14120B] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-6">
+            <div className="space-y-1">
+              <h2 className="font-display text-base font-bold text-text-primary uppercase tracking-wide">
+                CV Submission Archive
+              </h2>
+              <p className="text-xs text-text-secondary">
+                Upload and manage your team's compiled CV folder.
               </p>
+            </div>
+
+            {team.cv_url ? (
+              /* Premium Verified File Card */
+              <div className="relative overflow-hidden border border-blue-500/20 bg-blue-500/5 rounded-2xl p-6 text-center space-y-4">
+                {deleting ? (
+                  <div className="py-8 flex flex-col items-center gap-3">
+                    <Spinner />
+                    <p className="text-xs text-text-secondary font-semibold">Deleting archive from storage...</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mx-auto h-16 w-16 rounded-2xl bg-accent/15 border border-accent/20 flex items-center justify-center text-accent shadow-[0_0_12px_var(--accent-glow)]">
+                      <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25">
+                        <path d="M5 22h14a2 2 0 002-2V7.5L16.5 3H5a2 2 0 00-2 2v15a2 2 0 002 2z" />
+                        <path d="M16 3v5h5M12 11v6m0 0l-3-3m3 3l3-3m-6 5h6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="font-display font-bold text-text-primary text-sm max-w-md mx-auto truncate px-4">
+                        {getFileName()}
+                      </p>
+                      <p className="inline-flex items-center gap-1 text-[10px] font-display font-extrabold text-accent uppercase tracking-wider bg-accent/10 border border-accent/25 px-2.5 py-1 rounded-full">
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Archive Uploaded & Active
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2.5 justify-center pt-2">
+                      <Button onClick={handleDownload} variant="secondary" className="flex items-center gap-1.5 text-xs font-semibold px-4 h-9 cursor-pointer">
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M12 15V3m0 12l-4-4m4 4l4-4M4 17v4h16" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span>Download ZIP</span>
+                      </Button>
+
+                      {!isClosed && (
+                        <Button onClick={() => setConfirmDelete(true)} variant="danger" className="flex items-center gap-1.5 text-xs font-semibold px-4 h-9 cursor-pointer">
+                          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <span>Remove</span>
+                        </Button>
+                      )}
+                    </div>
+
+                    {isClosed && (
+                      <p className="text-[10px] text-text-muted bg-bg-base/30 border border-border/40 rounded px-2.5 py-1 max-w-sm mx-auto">
+                        Timeline closed. CV submission is locked and cannot be edited.
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            ) : (
+              /* Dropzone Upload Area */
+              <div 
+                onDragEnter={handleDrag}
+                onDragOver={handleDrag}
+                onDragLeave={handleDrag}
+                onDrop={handleDrop}
+                className={`flex flex-col justify-center items-center border border-dashed rounded-2xl p-8 text-center transition-all min-h-[220px] ${
+                  isClosed || isNotStarted
+                    ? 'border-border/40 bg-bg-base/20 cursor-not-allowed opacity-65'
+                    : dragActive
+                    ? 'border-accent bg-accent/5'
+                    : 'border-border hover:border-accent bg-transparent hover:bg-bg-base/40 cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]'
+                }`}
+              >
+                {uploading ? (
+                  <div className="py-6 flex flex-col items-center gap-3">
+                    <Spinner />
+                    <p className="text-xs text-text-secondary font-semibold">Uploading ZIP archive...</p>
+                  </div>
+                ) : isClosed ? (
+                  <div className="space-y-3 flex flex-col items-center">
+                    <div className="h-12 w-12 rounded-full border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-500 dark:text-rose-400">
+                      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0110 0v4" />
+                      </svg>
+                    </div>
+                    <div className="space-y-1 text-center">
+                      <p className="text-xs font-bold text-text-primary uppercase tracking-wider">Submission Window Closed</p>
+                      <p className="text-xs text-text-secondary max-w-[280px] leading-relaxed">
+                        The deadline for submitting CVs has passed. Your team is locked out of uploads.
+                      </p>
+                    </div>
+                  </div>
+                ) : isNotStarted ? (
+                  <div className="space-y-2 flex flex-col items-center">
+                    <div className="h-12 w-12 rounded-full border border-border bg-bg-base flex items-center justify-center text-text-muted animate-pulse">
+                      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                    </div>
+                    <p className="text-xs font-bold text-text-muted uppercase tracking-wider">Upload Window Inactive</p>
+                    <p className="text-xs text-text-muted max-w-[280px] leading-relaxed">
+                      ZIP submission has not started yet. Refer to the timeline indicators.
+                    </p>
+                  </div>
+                ) : (
+                  <label className="w-full flex flex-col justify-center items-center cursor-pointer py-4 space-y-3">
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".zip"
+                      onChange={handleFileInput}
+                    />
+                    <div className="h-12 w-12 rounded-xl bg-bg-base border border-border flex items-center justify-center text-text-secondary transition-colors shadow-panel">
+                      <svg className="h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-text-primary">
+                        Drag & drop your ZIP archive, or <span className="text-accent underline hover:text-accent-hover font-bold">browse</span>
+                      </p>
+                      <p className="text-[10px] text-text-muted">
+                        ZIP format files only (Max 20MB)
+                      </p>
+                    </div>
+                  </label>
+                )}
+              </div>
             )}
           </div>
         </div>
 
-        {/* Right Column: Upload widget / Uploaded representation */}
-        <div className="lg:col-span-7 flex flex-col">
-          {team.cv_url ? (
-            /* File Uploaded Card representation */
-            <div className="flex-1 flex flex-col justify-center items-center border-2 border-dashed border-accent/20 bg-accent/5 rounded-xl p-6 text-center space-y-4">
-              {deleting ? (
-                <div className="py-6 flex flex-col items-center gap-2">
-                  <Spinner />
-                  <p className="text-xs text-text-secondary">Deleting file from storage...</p>
+        {/* Right Hand Column (Rules / Info & Eligibility) */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* Rules & Requirements Card */}
+          <div className="rounded-3xl border border-border bg-white dark:bg-[#14120B] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-5">
+            <h3 className="font-display text-sm font-bold text-text-primary uppercase tracking-wider border-b border-border/40 pb-3">
+              Submission Guidelines
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <div className="h-6 w-6 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-[10px] font-bold text-accent shrink-0">
+                  1
+                </div>
+                <p className="text-xs text-text-secondary leading-relaxed">
+                  Compile all group member CVs into a <span className="font-bold text-text-primary">single ZIP archive</span>.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="h-6 w-6 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-[10px] font-bold text-accent shrink-0">
+                  2
+                </div>
+                <p className="text-xs text-text-secondary leading-relaxed">
+                  Ensure the overall archive file size stays below <span className="font-bold text-text-primary">20MB</span>.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="h-6 w-6 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center text-[10px] font-bold text-accent shrink-0">
+                  3
+                </div>
+                <p className="text-xs text-text-secondary leading-relaxed">
+                  Submission modifications are only allowed while the timeline window is <span className="font-bold text-text-primary">active</span>.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="h-6 w-6 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-[10px] font-bold text-rose-500 shrink-0">
+                  !
+                </div>
+                <p className="text-xs text-text-secondary leading-relaxed">
+                  <span className="font-bold text-text-primary">Ineligibility lock:</span> Teams missing CV archives when the window closes are locked out of project voting.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Voting Eligibility status panel */}
+          <div className="rounded-3xl border border-border bg-white dark:bg-[#14120B] p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-4">
+            <h3 className="font-display text-sm font-bold text-text-primary uppercase tracking-wider border-b border-border/40 pb-3">
+              Voting Status
+            </h3>
+
+            {isClosed ? (
+              team.cv_url ? (
+                <div className="flex flex-col gap-3">
+                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 flex items-start gap-3">
+                    <svg className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Eligible & Ready</p>
+                      <p className="text-[11px] text-text-secondary leading-relaxed">
+                        Your CV folder has been successfully uploaded and locked in. Your team is eligible for project allocation.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ) : (
-                <>
-                  <div className="h-16 w-16 rounded-2xl bg-accent/10 border border-accent/25 flex items-center justify-center text-accent shadow-[0_0_15px_rgba(0,201,120,0.15)]">
-                    <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M5 22h14a2 2 0 002-2V7.5L16.5 3H5a2 2 0 00-2 2v15a2 2 0 002 2z" />
-                      <path d="M16 3v5h5M12 11v6m0 0l-3-3m3 3l3-3m-6 5h6" strokeLinecap="round" strokeLinejoin="round" />
+                <div className="flex flex-col gap-3">
+                  <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-4 flex items-start gap-3">
+                    <svg className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-rose-500 uppercase tracking-wider">Locked - Ineligible</p>
+                      <p className="text-[11px] text-text-secondary leading-relaxed">
+                        No archive was uploaded prior to the deadline. Your team's voting access is locked out.
+                      </p>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <p className="font-display font-bold text-text-primary text-sm max-w-sm truncate">
-                      {getFileName()}
-                    </p>
-                    <p className="text-[10px] font-mono text-accent uppercase tracking-wider font-semibold">
-                      Archive Uploaded
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3 justify-center pt-2">
-                    <Button onClick={handleDownload} variant="secondary" className="flex items-center gap-1.5 text-xs font-semibold">
-                      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M12 15V3m0 12l-4-4m4 4l4-4M4 17v4h16" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      Download ZIP
-                    </Button>
-
-                    {!isClosed && (
-                      <Button onClick={() => setConfirmDelete(true)} variant="danger" className="flex items-center gap-1.5 text-xs font-semibold">
-                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-
-                  {isClosed && (
-                    <p className="text-[10px] text-text-muted italic bg-bg-elevated/40 border border-border/30 rounded px-2.5 py-0.5">
-                      Deadline passed. CV archive is locked and cannot be removed.
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-          ) : (
-            /* Dropzone upload area */
-            <div 
-              onDragEnter={handleDrag}
-              onDragOver={handleDrag}
-              onDragLeave={handleDrag}
-              onDrop={handleDrop}
-              className={`flex-1 flex flex-col justify-center items-center border-2 border-dashed rounded-xl p-6 text-center transition-all ${
-                isClosed || isNotStarted
-                  ? 'border-border/40 bg-bg-elevated/10 cursor-not-allowed opacity-60'
-                  : dragActive
-                  ? 'border-accent bg-accent/5 shadow-[inset_0_0_10px_rgba(0,201,120,0.1)]'
-                  : 'border-border/80 hover:border-accent bg-transparent hover:bg-bg-elevated/10 cursor-pointer'
-              }`}
-            >
-              {uploading ? (
-                <div className="py-6 flex flex-col items-center gap-2">
-                  <Spinner />
-                  <p className="text-xs text-text-secondary">Uploading ZIP archive...</p>
                 </div>
-              ) : isClosed ? (
-                <div className="py-6 space-y-2">
-                  <div className="mx-auto h-12 w-12 rounded-full border border-border bg-bg-elevated flex items-center justify-center text-text-muted">
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                      <path d="M7 11V7a5 5 0 0110 0v4" />
-                    </svg>
-                  </div>
-                  <p className="text-xs font-semibold text-text-muted">Submission Window Closed</p>
-                  <p className="text-[10px] text-text-muted max-w-[240px]">
-                    The timeline for submitting CVs has passed. Your team is locked out of uploads.
+              )
+            ) : (
+              <div className="rounded-xl border border-border bg-bg-base/40 dark:bg-bg-base/20 p-4 flex items-start gap-3">
+                <svg className="h-5 w-5 text-text-muted shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <div className="space-y-1">
+                  <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Awaiting Final Lock</p>
+                  <p className="text-[11px] text-text-secondary leading-relaxed">
+                    Eligibility status will be finalized and locked as soon as the submission timeline window finishes.
                   </p>
                 </div>
-              ) : isNotStarted ? (
-                <div className="py-6 space-y-2">
-                  <div className="mx-auto h-12 w-12 rounded-full border border-border bg-bg-elevated flex items-center justify-center text-text-muted animate-pulse">
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                  </div>
-                  <p className="text-xs font-semibold text-text-muted">Upload Window Inactive</p>
-                  <p className="text-[10px] text-text-muted max-w-[240px]">
-                    ZIP submission has not started yet. Check the timeline countdown.
-                  </p>
-                </div>
-              ) : (
-                <label className="w-full h-full flex flex-col justify-center items-center cursor-pointer py-6 space-y-3">
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept=".zip"
-                    onChange={handleFileInput}
-                  />
-                  <div className="h-12 w-12 rounded-xl bg-bg-elevated border border-border/80 flex items-center justify-center text-text-secondary transition-colors group-hover:text-accent shadow-panel">
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-text-primary">
-                      Drag & drop your ZIP file here, or <span className="text-accent underline hover:text-accent-hover">browse</span>
-                    </p>
-                    <p className="text-[10px] text-text-muted font-mono">
-                      Accepts only .zip (Max 20MB)
-                    </p>
-                  </div>
-                </label>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
 
       </div>
@@ -429,6 +516,6 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete(false)}
       />
-    </section>
+    </div>
   )
 }
