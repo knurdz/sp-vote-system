@@ -8,7 +8,8 @@ import { PageShell } from './PageShell'
 import { Wordmark } from './Wordmark'
 import { ThemeToggle } from './ThemeToggle'
 import { Button } from '@/components/ui/Button'
-import { cn } from '@/lib/utils'
+import { cn, truncate } from '@/lib/utils'
+import { supabase } from '@/lib/supabase'
 
 interface PageWrapperProps {
   children: React.ReactNode
@@ -23,6 +24,44 @@ export function PageWrapper({ children, className, headerRight }: PageWrapperPro
   const { pathname } = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
+
+  const [votedProject, setVotedProject] = useState<{ id: string; title: string } | null>(null)
+
+  useEffect(() => {
+    if (role !== 'leader' || !team?.id) {
+      setVotedProject(null)
+      return
+    }
+
+    const fetchVotedProject = async () => {
+      const { data, error } = await supabase
+        .from('votes')
+        .select('project_id, projects(title)')
+        .eq('team_id', team.id)
+        .maybeSingle()
+
+      if (!error && data) {
+        const projRaw = data.projects as { title: string } | { title: string }[] | null
+        const proj = Array.isArray(projRaw) ? projRaw[0] : projRaw
+        if (proj?.title) {
+          setVotedProject({
+            id: data.project_id,
+            title: proj.title,
+          })
+        }
+      } else {
+        setVotedProject(null)
+      }
+    }
+
+    void fetchVotedProject()
+
+    const interval = setInterval(() => {
+      void fetchVotedProject()
+    }, 15000)
+
+    return () => clearInterval(interval)
+  }, [role, team?.id])
 
   const profileDropdownRef = useRef<HTMLDivElement>(null)
 
@@ -81,6 +120,20 @@ export function PageWrapper({ children, className, headerRight }: PageWrapperPro
             icon: (className: string) => (
               <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            )
+          },
+        ]
+      : []),
+    ...(votedProject
+      ? [
+          {
+            to: `/project/${votedProject.id}`,
+            label: `My Vote: ${truncate(votedProject.title, 15)}`,
+            match: (path: string) => path === `/project/${votedProject.id}`,
+            icon: (className: string) => (
+              <svg className={cn(className, "text-blue-500")} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             )
           },

@@ -20,7 +20,7 @@ import type { Project } from '@/types'
 export function AdminProjects() {
   const { projects, loading, error, refetch } = useProjects()
   const sortedProjects = useMemo(() => sortProjectsByStatus(projects), [projects])
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
@@ -173,13 +173,15 @@ export function AdminProjects() {
                           </Button>
                         )
                       )}
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={() => handleDeleteClick(project)}
-                      >
-                        Delete
-                      </Button>
+                      {user?.email === 'thesarupraneeth@gmail.com' && (
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => handleDeleteClick(project)}
+                        >
+                          Delete
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </motion.tr>
