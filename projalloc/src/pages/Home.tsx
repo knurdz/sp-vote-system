@@ -11,11 +11,11 @@ import type { ProjectStatus } from '@/types'
 import { cn } from '@/lib/utils'
 
 const FILTERS: { label: string; value: ProjectStatus | 'all' }[] = [
-  { label: 'All', value: 'all' },
   { label: 'Open now', value: 'voting' },
   { label: 'Coming soon', value: 'upcoming' },
   { label: 'Closed', value: 'closed' },
   { label: 'Assigned', value: 'assigned' },
+  { label: 'All', value: 'all' },
 ]
 
 const EMPTY_COPY: Record<
@@ -47,7 +47,7 @@ const EMPTY_COPY: Record<
 }
 
 export function Home() {
-  const [filter, setFilter] = useState<ProjectStatus | 'all'>('all')
+  const [filter, setFilter] = useState<ProjectStatus | 'all'>('voting')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [layout, setLayout] = useState<'grid' | 'list'>('grid')
