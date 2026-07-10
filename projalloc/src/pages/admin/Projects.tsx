@@ -10,6 +10,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { Alert } from '@/components/ui/Alert'
 import { ProjectForm, type ProjectFormData } from '@/components/projects/ProjectForm'
 import { SpinModal } from '@/components/spin/SpinModal'
+import { AssignTeamModal } from '@/components/projects/AssignTeamModal'
 import { useProjects } from '@/hooks/useProjects'
 import { supabase } from '@/lib/supabase'
 import { sortProjectsByStatus, STATUS_LABELS } from '@/lib/utils'
@@ -24,6 +25,7 @@ export function AdminProjects() {
   const [editing, setEditing] = useState<Project | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [spinProject, setSpinProject] = useState<Project | null>(null)
+  const [assignProject, setAssignProject] = useState<Project | null>(null)
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null)
 
   const handleSave = async (data: ProjectFormData) => {
@@ -153,13 +155,23 @@ export function AdminProjects() {
                         </Button>
                       )}
                       {project.status === 'closed' && (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => setSpinProject(project)}
-                        >
-                          Spin
-                        </Button>
+                        project.cv_required ? (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => setAssignProject(project)}
+                          >
+                            Assign Team
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => setSpinProject(project)}
+                          >
+                            Spin
+                          </Button>
+                        )
                       )}
                       <Button
                         size="sm"
@@ -203,6 +215,17 @@ export function AdminProjects() {
         onLocked={() => {
           setSpinProject(null)
           void refetch()
+        }}
+      />
+
+      <AssignTeamModal
+        projectId={assignProject?.id ?? ''}
+        projectTitle={assignProject?.title ?? ''}
+        open={!!assignProject}
+        onClose={() => setAssignProject(null)}
+        onSuccess={async () => {
+          setAssignProject(null)
+          await refetch()
         }}
       />
 

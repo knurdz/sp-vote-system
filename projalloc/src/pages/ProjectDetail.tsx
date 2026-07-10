@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import { Countdown } from '@/components/ui/Countdown'
@@ -6,21 +6,32 @@ import { Alert } from '@/components/ui/Alert'
 import { ProjectDetailSkeleton } from '@/components/ui/Skeleton'
 import { VoteButton } from '@/components/voting/VoteButton'
 import { VoterList } from '@/components/voting/VoterList'
+import { Button } from '@/components/ui/Button'
 import { useProject } from '@/hooks/useProjects'
 import { useSpinEvent } from '@/hooks/useSpinEvent'
 import { useVotes } from '@/hooks/useVotes'
 import { useTeams } from '@/hooks/useTeams'
+import { useAuth } from '@/hooks/useAuth'
+import { AssignTeamModal } from '@/components/projects/AssignTeamModal'
 import { formatDateTime, STATUS_LABELS } from '@/lib/utils'
 
 type TabType = 'details' | 'voters' | 'spin'
 
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
-  const { project, loading: projectLoading, error: projectError } = useProject(id)
-  const { spinEvent, spinLog, candidates, loading: spinLoading } = useSpinEvent(id)
+  const { project, loading: projectLoading, error: projectError, refetch: refetchProject } = useProject(id)
+  const { spinEvent, spinLog, candidates, loading: spinLoading, refetch: refetchSpin } = useSpinEvent(id)
   const { votes, loading: votesLoading } = useVotes(id)
   const { teams, loading: teamsLoading } = useTeams()
+  const { role } = useAuth()
   const [activeTab, setActiveTab] = useState<TabType>('details')
+  const [assignModalOpen, setAssignModalOpen] = useState(false)
+
+  useEffect(() => {
+    if (project?.cv_required && activeTab === 'spin') {
+      setActiveTab('details')
+    }
+  }, [project, activeTab])
 
   if (projectLoading || votesLoading || teamsLoading) {
     return (
@@ -40,9 +51,9 @@ export function ProjectDetail() {
 
   const winningTeam = spinLog?.winning_team_name
 
-  const tabs: { type: TabType; label: string; icon: React.ReactNode }[] = [
+  const tabs = [
     {
-      type: 'details',
+      type: 'details' as TabType,
       label: 'Project Details',
       icon: (
         <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25">
@@ -52,7 +63,7 @@ export function ProjectDetail() {
       )
     },
     {
-      type: 'voters',
+      type: 'voters' as TabType,
       label: `Voter Teams (${votes.length})`,
       icon: (
         <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25">
@@ -63,16 +74,18 @@ export function ProjectDetail() {
         </svg>
       )
     },
-    {
-      type: 'spin',
-      label: 'Spin Wheel',
-      icon: (
-        <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 6v6l4 2" />
-        </svg>
-      )
-    }
+    ...(!project?.cv_required ? [
+      {
+        type: 'spin' as TabType,
+        label: 'Spin Wheel',
+        icon: (
+          <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v6l4 2" />
+          </svg>
+        )
+      }
+    ] : [])
   ]
 
   const statusBadges = (
@@ -99,6 +112,11 @@ export function ProjectDetail() {
               <h1 className="font-display text-2xl font-extrabold text-text-primary tracking-tight uppercase">
                 {project.title}
               </h1>
+              {project.cv_required && (
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-display font-extrabold bg-blue-500/15 border border-blue-500/20 text-blue-500 tracking-wide uppercase">
+                  CV Required
+                </span>
+              )}
               <span className="px-2 py-0.5 rounded-md text-[10px] font-display font-extrabold bg-accent/15 border border-accent/20 text-accent tracking-wide uppercase">
                 Batch Allocation
               </span>
@@ -275,6 +293,14 @@ export function ProjectDetail() {
 
               {/* Sidebar Panel for actions / votes */}
               <div className="space-y-6">
+                {project.cv_required && (
+                  <section className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-6 shadow-panel">
+                    <h3 className="font-display text-xs font-bold text-blue-500 uppercase tracking-wider mb-2">Company Selection Project</h3>
+                    <p className="text-xs text-text-secondary leading-relaxed">
+                      For this project, a randomized spin wheel will not be run. Your team's CVs will be shared with the host company, who will select the team to be matched.
+                    </p>
+                  </section>
+                )}
                 
                 {/* Vote Action Box */}
                 {project.status === 'voting' ? (
@@ -291,6 +317,17 @@ export function ProjectDetail() {
                     <p className="mt-2 text-sm text-text-secondary font-medium">
                       Voting is currently closed for this project.
                     </p>
+                    {project.status === 'closed' && project.cv_required && role === 'admin' && (
+                      <div className="mt-4">
+                        <Button
+                          size="sm"
+                          className="w-full font-bold uppercase tracking-wider"
+                          onClick={() => setAssignModalOpen(true)}
+                        >
+                          Assign Team
+                        </Button>
+                      </div>
+                    )}
                   </section>
                 )}
 
@@ -402,6 +439,18 @@ export function ProjectDetail() {
         </div>
 
       </div>
+
+      {project.cv_required && (
+        <AssignTeamModal
+          projectId={project.id}
+          projectTitle={project.title}
+          open={assignModalOpen}
+          onClose={() => setAssignModalOpen(false)}
+          onSuccess={async () => {
+            await Promise.all([refetchProject(), refetchSpin()])
+          }}
+        />
+      )}
     </PageWrapper>
   )
 }

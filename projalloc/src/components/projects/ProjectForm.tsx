@@ -15,6 +15,7 @@ export interface ProjectFormData {
   team_size: number
   voting_deadline: string
   status: ProjectStatus
+  cv_required: boolean
 }
 
 interface ProjectFormProps {
@@ -40,6 +41,7 @@ export function ProjectForm({ initial, onSubmit, onCancel }: ProjectFormProps) {
       : defaultDeadline,
   )
   const [status, setStatus] = useState<ProjectStatus>(initial?.status ?? 'upcoming')
+  const [cvRequired, setCvRequired] = useState(initial?.cv_required ?? false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { submitLocked, runLocked } = useSubmitLock()
@@ -68,6 +70,7 @@ export function ProjectForm({ initial, onSubmit, onCancel }: ProjectFormProps) {
           team_size: teamSize,
           voting_deadline: fromDatetimeLocalValue(deadline),
           status,
+          cv_required: cvRequired,
         })
 
         if (!parsed.success) {
@@ -189,6 +192,19 @@ export function ProjectForm({ initial, onSubmit, onCancel }: ProjectFormProps) {
             <option value="closed">Voting closed</option>
           </select>
         </div>
+      </div>
+
+      <div className="flex items-center gap-2 py-1.5">
+        <input
+          id="cvRequired"
+          type="checkbox"
+          className="h-4 w-4 rounded border-border bg-bg-surface text-accent focus:ring-accent cursor-pointer"
+          checked={cvRequired}
+          onChange={(e) => setCvRequired(e.target.checked)}
+        />
+        <label htmlFor="cvRequired" className="text-sm font-medium text-text-primary select-none cursor-pointer">
+          CV Required (Manual selection by company, skip spin wheel)
+        </label>
       </div>
 
       <DateTimePicker
