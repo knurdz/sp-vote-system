@@ -47,7 +47,7 @@ const EMPTY_COPY: Record<
 }
 
 export function Home() {
-  const [filter, setFilter] = useState<ProjectStatus | 'all'>('voting')
+  const [filter, setFilter] = useState<ProjectStatus | 'all'>('all')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [layout, setLayout] = useState<'grid' | 'list'>('grid')
