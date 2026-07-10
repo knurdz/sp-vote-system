@@ -139,15 +139,15 @@ export function Navbar() {
                   )}
                 </div>
 
-                <div className="hidden min-w-0 md:block">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span className="truncate text-[13px] font-medium text-text-primary">
-                      {truncate(primaryLabel, 32)}
+                <div className="min-w-0">
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <span className="truncate text-[12px] md:text-[13px] font-medium text-text-primary max-w-[75px] sm:max-w-[120px] md:max-w-[200px]">
+                      {primaryLabel}
                     </span>
-                    {isAdmin && <Badge variant="admin">admin</Badge>}
+                    {isAdmin && <Badge variant="admin" className="scale-90 origin-left">admin</Badge>}
                   </div>
                   {showAdminEmail && (
-                    <p className="truncate font-mono text-[10px] text-text-muted">
+                    <p className="hidden md:block truncate font-mono text-[10px] text-text-muted">
                       {truncate(email, 30)}
                     </p>
                   )}
