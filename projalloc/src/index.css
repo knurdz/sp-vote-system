@@ -222,7 +222,7 @@ select option {
   backdrop-filter: blur(12px) saturate(110%);
 }
 
-:where(button, a[class*="rounded-btn"], a[class*="rounded-xl"], a[class*="rounded-lg"]) {
+:where(button:not(.absolute), a[class*="rounded-btn"], a[class*="rounded-xl"], a[class*="rounded-lg"]) {
   position: relative;
   overflow: hidden;
   -webkit-backdrop-filter: blur(12px) saturate(110%);

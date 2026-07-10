@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import CenturionLogoBlack from '@/assets/centurion-logo-black.svg'
 import CenturionLogoWhite from '@/assets/centurion-logo-white.svg'
 import { useThemeStore } from '@/store/themeStore'
@@ -31,9 +30,9 @@ export function Wordmark({ className = '', asLink = true }: WordmarkProps) {
 
   if (asLink) {
     return (
-      <Link to="/" className="group inline-flex items-center transition-opacity hover:opacity-95">
+      <a href="/" className="group inline-flex items-center transition-opacity hover:opacity-95">
         {content}
-      </Link>
+      </a>
     )
   }
 

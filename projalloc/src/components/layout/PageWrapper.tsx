@@ -204,12 +204,12 @@ export function PageWrapper({ children, className, headerRight }: PageWrapperPro
         <div className="flex min-h-screen flex-col lg:flex-row">
           <aside className="hidden lg:flex fixed inset-y-0 left-0 z-20 w-64 flex-col border-r border-border/40 bg-white dark:bg-[#14120B]/95 p-6 justify-between shadow-[0_0_20px_rgba(0,0,0,0.05)]">
             <div className="flex flex-col gap-6">
-              <Link to="/" className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Wordmark />
                 <span className="px-1.5 py-0.5 rounded-md text-[9px] font-display font-extrabold tracking-wider bg-accent/10 border border-accent/25 text-accent shadow-[0_0_8px_var(--accent-glow)] uppercase">
                   ADMIN
                 </span>
-              </Link>
+              </div>
               
               <nav className="flex flex-col gap-1.5">
                 {navItems.map((item) => {
@@ -292,12 +292,12 @@ export function PageWrapper({ children, className, headerRight }: PageWrapperPro
             <header className="header-shine lg:hidden sticky top-0 z-30 w-full border-b border-border/40 bg-bg-surface/20 backdrop-blur-md">
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
-                  <Link to="/" className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <Wordmark />
                     <span className="px-1.5 py-0.5 rounded-md text-[9px] font-display font-extrabold tracking-wider bg-accent/10 border border-accent/25 text-accent shadow-[0_0_8px_var(--accent-glow)] uppercase">
                       ADMIN
                     </span>
-                  </Link>
+                  </div>
 
                   <button
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -430,10 +430,7 @@ export function PageWrapper({ children, className, headerRight }: PageWrapperPro
                   {headerRight && <div className="flex items-center gap-3 shrink-0">{headerRight}</div>}
                 </div>
               ) : (
-                <div className="mb-6 flex items-center justify-between gap-3">
-                  <span className="text-xs font-display font-semibold text-text-secondary">Projects</span>
-                  {headerRight && <div className="flex items-center gap-3 shrink-0">{headerRight}</div>}
-                </div>
+                headerRight && <div className="mb-6 flex items-center justify-end gap-3">{headerRight}</div>
               )}
 
               {children}
@@ -453,14 +450,14 @@ export function PageWrapper({ children, className, headerRight }: PageWrapperPro
             
             {/* Left Side: Brand Logo & Desktop Nav Links */}
             <div className="flex items-center gap-6">
-              <Link to="/" className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
                 <Wordmark />
                 {isAdmin && (
                   <span className="px-1.5 py-0.5 rounded-md text-[9px] font-display font-extrabold tracking-wider bg-accent/10 border border-accent/25 text-accent shadow-[0_0_8px_var(--accent-glow)] uppercase">
                     ADMIN
                   </span>
                 )}
-              </Link>
+              </div>
 
               <nav className="hidden lg:flex items-center gap-1">
                 {navItems.map((item) => {
@@ -757,10 +754,7 @@ export function PageWrapper({ children, className, headerRight }: PageWrapperPro
             {headerRight && <div className="flex items-center gap-3 shrink-0">{headerRight}</div>}
           </div>
         ) : (
-          <div className="mb-6 flex items-center justify-between gap-3">
-            <span className="text-xs font-display font-semibold text-text-secondary">Projects</span>
-            {headerRight && <div className="flex items-center gap-3 shrink-0">{headerRight}</div>}
-          </div>
+          headerRight && <div className="mb-6 flex items-center justify-end gap-3">{headerRight}</div>
         )}
 
         {children}

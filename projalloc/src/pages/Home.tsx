@@ -47,7 +47,7 @@ const EMPTY_COPY: Record<
 }
 
 export function Home() {
-  const [filter, setFilter] = useState<ProjectStatus | 'all'>('voting')
+  const [filter, setFilter] = useState<ProjectStatus | 'all'>('all')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [layout, setLayout] = useState<'grid' | 'list'>('grid')
@@ -138,12 +138,12 @@ export function Home() {
         )}
 
         {/* Title Block */}
-        <div className="flex flex-col gap-1.5 border-b border-border/40 pb-4">
-          <h1 className="font-display text-2xl font-extrabold tracking-tight text-text-primary sm:text-3xl uppercase">
+        <div className="flex flex-col gap-2 border-b border-border/40 pb-6">
+          <h1 className="font-display text-4xl font-extrabold tracking-tight text-text-primary sm:text-3xl uppercase">
             Mission Log
           </h1>
-          <p className="text-xs text-text-secondary">
-            Browse and vote on transparent industry projects allocated to BATCH24 teams.
+          <p className="text-sm text-text-secondary sm:text-base">
+            Browse and vote on industry projects allocated to BATCH 24 teams.
           </p>
         </div>
 
