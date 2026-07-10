@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useUserTeam } from '@/hooks/useTeams'
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { Wordmark } from './Wordmark'
 import { cn, getInitials, truncate } from '@/lib/utils'
+import { supabase } from '@/lib/supabase'
 
 const NAV_ITEMS = [
   {
@@ -49,8 +51,60 @@ export function Navbar() {
   const { team } = useUserTeam(user?.email, role)
   const { pathname } = useLocation()
 
+  const [votedProject, setVotedProject] = useState<{ id: string; title: string } | null>(null)
+
+  useEffect(() => {
+    if (role !== 'leader' || !team?.id) {
+      setVotedProject(null)
+      return
+    }
+
+    const fetchVotedProject = async () => {
+      const { data, error } = await supabase
+        .from('votes')
+        .select('project_id, projects(title)')
+        .eq('team_id', team.id)
+        .maybeSingle()
+
+      if (!error && data) {
+        const projRaw = data.projects as { title: string } | { title: string }[] | null
+        const proj = Array.isArray(projRaw) ? projRaw[0] : projRaw
+        if (proj?.title) {
+          setVotedProject({
+            id: data.project_id,
+            title: proj.title,
+          })
+        }
+      } else {
+        setVotedProject(null)
+      }
+    }
+
+    void fetchVotedProject()
+
+    const interval = setInterval(() => {
+      void fetchVotedProject()
+    }, 15000)
+
+    return () => clearInterval(interval)
+  }, [role, team?.id])
+
   const visibleNavItems = [
     ...NAV_ITEMS,
+    ...(votedProject
+      ? [
+          {
+            to: `/project/${votedProject.id}`,
+            label: `My Vote: ${truncate(votedProject.title, 15)}`,
+            match: (path: string) => path === `/project/${votedProject.id}`,
+            icon: (
+              <svg className="h-4.5 w-4.5 text-blue-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            ),
+          },
+        ]
+      : []),
     ...(role === 'leader'
       ? [
           {
