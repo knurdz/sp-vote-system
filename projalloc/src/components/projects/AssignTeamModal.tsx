@@ -49,8 +49,26 @@ export function AssignTeamModal({
 
         if (fetchErr) throw fetchErr
         
-        // Filter out votes where the team record is null (just in case of DB orphaned rows)
-        const validCandidates = (data || []).filter((v) => v.team !== null) as CandidateVote[]
+        // Convert to any to safely cast client-side structure from Supabase relation
+        const rawVotes = (data as any) || []
+        const validCandidates: CandidateVote[] = rawVotes
+          .map((v: any) => {
+            const team = Array.isArray(v.team) ? v.team[0] : v.team
+            return {
+              id: v.id,
+              team_id: v.team_id,
+              voted_at: v.voted_at,
+              team: team ? {
+                id: team.id,
+                name: team.name,
+                leader_email: team.leader_email,
+                cv_url: team.cv_url,
+                created_at: team.created_at || ''
+              } : null
+            }
+          })
+          .filter((v: any) => v.team !== null)
+
         setCandidates(validCandidates)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load candidates')
@@ -67,7 +85,7 @@ export function AssignTeamModal({
     setSubmitting(true)
     setError(null)
     try {
-      const { data, error: rpcErr } = await supabase.rpc('assign_project_manually', {
+      const { error: rpcErr } = await supabase.rpc('assign_project_manually', {
         p_project_id: projectId,
         p_team_id: selectedTeamId,
       })
