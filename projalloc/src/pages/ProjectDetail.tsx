@@ -271,7 +271,7 @@ export function ProjectDetail() {
                   <h2 className="mb-4 font-display text-md font-bold text-text-primary uppercase tracking-wide">
                     Project Description
                   </h2>
-                  <p className="leading-relaxed text-text-secondary text-sm">{project.description}</p>
+                  <p className="leading-relaxed text-text-secondary text-sm whitespace-pre-wrap">{project.description}</p>
                 </section>
 
                 <section className="rounded-2xl border border-border bg-white dark:bg-[#14120B] p-6 sm:p-8 shadow-panel">
