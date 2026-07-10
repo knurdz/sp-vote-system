@@ -22,6 +22,7 @@ export const projectSchema = z
     team_size: z.coerce.number().int().min(1).max(20),
     voting_deadline: z.string().min(1),
     status: z.enum(PROJECT_STATUSES),
+    cv_required: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     const deadline = new Date(data.voting_deadline)

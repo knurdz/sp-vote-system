@@ -36,6 +36,7 @@ export interface Project {
   status: ProjectStatus
   created_by: string | null
   created_at: string
+  cv_required: boolean
 }
 
 export interface AssignedTeamInfo {
