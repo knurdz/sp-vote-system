@@ -357,7 +357,7 @@ export function ProjectDetail() {
                   Showing {votes.length} team votes
                 </span>
               </div>
-              <VoterList projectId={project.id} visible />
+              <VoterList projectId={project.id} visible cvRequired={project.cv_required} />
             </section>
           )}
 

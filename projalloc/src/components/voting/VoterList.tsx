@@ -8,9 +8,10 @@ import { supabase } from '@/lib/supabase'
 interface VoterListProps {
   projectId: string
   visible: boolean
+  cvRequired?: boolean
 }
 
-export function VoterList({ projectId, visible }: VoterListProps) {
+export function VoterList({ projectId, visible, cvRequired }: VoterListProps) {
   const { role, user } = useAuth()
   const { votes, loading, error } = useVotes(projectId)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
@@ -209,7 +210,7 @@ export function VoterList({ projectId, visible }: VoterListProps) {
               <div className="pt-2.5 border-t border-border/30 text-center">
                 {hasCv ? (
                   <span className="text-[11px] font-semibold text-blue-500">
-                    Verified - Eligible for Spin
+                    {cvRequired ? 'Verified - Eligible for Matching' : 'Verified - Eligible for Spin'}
                   </span>
                 ) : (
                   <span className="text-[11px] font-semibold text-rose-500">

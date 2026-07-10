@@ -57,7 +57,7 @@ export const teamSchema = z.object({
 
 export type TeamInput = z.infer<typeof teamSchema>
 
-const ZOOM_URL_PATTERN = /^https:\/\/(zoom\.us\/|us\d+\.zoom\.us\/)/
+const ZOOM_URL_PATTERN = /^https:\/\/([a-zA-Z0-9-]+\.)?zoom\.us\//
 
 export const spinScheduleSchema = z
   .object({
