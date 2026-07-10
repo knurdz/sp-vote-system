@@ -19,8 +19,8 @@
   --primary-900: 221 83% 22%;
   --primary-950: 221 83% 14%;
 
-  /* Background Image (Disabled for clean Cursor dark theme) */
-  --bg-image: none;
+  /* Background Image */
+  --bg-image: url('./assets/dark-bg.jpg');
 
   /* Dark Theme Semantics (Cursor.com Warm Dark Theme) */
   --bg-base: #14120B;
@@ -148,10 +148,11 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   background-image: 
+    var(--bg-image),
     radial-gradient(at 50% 0%, var(--page-glow-color), transparent 60%),
     linear-gradient(var(--grid-color) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-  background-size: 100% 100%, 48px 48px, 48px 48px;
+  background-size: cover, 100% 100%, 48px 48px, 48px 48px;
   background-attachment: fixed;
 }
 
@@ -200,6 +201,32 @@ select option {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
   opacity: 0.7;
+}
+
+.header-shine::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1.5px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 30%, transparent), transparent);
+}
+
+:where(.panel, .card, .project-card-accent, .spin-overlay-card, [class*="shadow-panel"]) {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--glass-surface, color-mix(in srgb, var(--bg-surface) 20%, transparent)) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
+  backdrop-filter: blur(12px) saturate(110%);
+}
+
+:where(button, a[class*="rounded-btn"], a[class*="rounded-xl"], a[class*="rounded-lg"]) {
+  position: relative;
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
+  backdrop-filter: blur(12px) saturate(110%);
 }
 
 @keyframes pulse-dot {
@@ -595,6 +622,41 @@ input[type="range"]::-moz-range-thumb:hover {
 
 .flip-card-container.is-hovered .flip-card {
   transform: scaleX(1) translateZ(0);
+}
+
+.project-card-accent {
+  --project-card-accent: rgba(34, 197, 94, 0.9);
+  overflow: hidden;
+}
+
+.project-card-accent-voting {
+  --project-card-accent: rgba(34, 197, 94, 0.9);
+}
+
+.project-card-accent-upcoming {
+  --project-card-accent: rgba(245, 158, 11, 0.9);
+}
+
+.project-card-accent-closed {
+  --project-card-accent: rgba(244, 63, 94, 0.9);
+}
+
+.project-card-accent-assigned {
+  --project-card-accent: rgba(56, 213, 255, 0.9);
+}
+
+.project-card-accent::before {
+  content: "";
+  position: absolute;
+  inset: -1px auto auto -1px;
+  width: calc(100% + 2px);
+  height: 50%;
+  pointer-events: none;
+  border-top: 3px solid var(--project-card-accent);
+  border-left: 3px solid var(--project-card-accent);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  opacity: 0.9;
 }
 
 .flip-card-inner {

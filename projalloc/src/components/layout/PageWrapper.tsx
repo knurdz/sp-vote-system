@@ -289,7 +289,7 @@ export function PageWrapper({ children, className, headerRight }: PageWrapperPro
           </aside>
 
           <div className="flex flex-1 flex-col lg:pl-64 min-h-screen">
-            <header className="lg:hidden sticky top-0 z-30 w-full bg-white dark:bg-[#14120B]/90 border-b border-border/40 backdrop-blur-md">
+            <header className="header-shine lg:hidden sticky top-0 z-30 w-full border-b border-border/40 bg-bg-surface/20 backdrop-blur-md">
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
                   <Link to="/" className="flex items-center gap-2 shrink-0">
@@ -447,7 +447,7 @@ export function PageWrapper({ children, className, headerRight }: PageWrapperPro
   return (
     <PageShell>
       {/* Top Navigation Header */}
-      <header className="sticky top-0 z-30 w-full bg-white dark:bg-[#14120B]/90 border-b border-border/40 backdrop-blur-md">
+      <header className="header-shine sticky top-0 z-30 w-full border-b border-border/40 bg-bg-surface/20 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             

@@ -36,6 +36,13 @@ export function ProjectCard({
   const isAssigned = project.status === 'assigned'
   const isClosed = project.status === 'closed'
   const isUpcoming = project.status === 'upcoming'
+  const accentClass = isVoting
+    ? 'project-card-accent-voting'
+    : isUpcoming
+      ? 'project-card-accent-upcoming'
+      : isClosed
+        ? 'project-card-accent-closed'
+        : 'project-card-accent-assigned'
 
   /** "Your Vote" badge — shown in the top-right corner of the card */
   const MyVoteBadge = myVote ? (
@@ -52,7 +59,8 @@ export function ProjectCard({
       <Link
         to={`/project/${project.id}`}
         className={cn(
-          "relative flex flex-col md:flex-row md:items-center justify-between rounded-2xl border bg-white dark:bg-[#14120B] py-5 px-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] gap-6 cursor-pointer",
+          "project-card-accent relative flex flex-col md:flex-row md:items-center justify-between rounded-2xl border bg-bg-surface/20 py-5 px-6 shadow-[0_1px_3px_rgba(0,0,0,0.02)] backdrop-blur-md transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] gap-6 cursor-pointer",
+          accentClass,
           myVote
             ? "border-emerald-400/60 dark:border-emerald-500/40 hover:border-emerald-400 dark:hover:border-emerald-500/70 ring-1 ring-emerald-400/20 dark:ring-emerald-500/15"
             : "border-slate-200/80 dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700"
@@ -175,7 +183,8 @@ export function ProjectCard({
     <Link
       to={`/project/${project.id}`}
       className={cn(
-        "relative flex flex-col justify-between rounded-2xl border bg-white dark:bg-[#14120B] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] cursor-pointer",
+        "project-card-accent relative flex flex-col justify-between rounded-2xl border bg-bg-surface/20 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] backdrop-blur-md transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] cursor-pointer",
+        accentClass,
         myVote
           ? "border-emerald-400/60 dark:border-emerald-500/40 hover:border-emerald-400 dark:hover:border-emerald-500/70 ring-1 ring-emerald-400/20 dark:ring-emerald-500/15"
           : "border-slate-200/80 dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700"

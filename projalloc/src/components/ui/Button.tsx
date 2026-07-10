@@ -8,13 +8,13 @@ interface ButtonProps extends HTMLMotionProps<'button'> {
 
 const variants = {
   primary:
-    'bg-accent font-display font-semibold text-[var(--accent-text)] border border-accent shadow-[0_4px_16px_var(--accent-glow)] hover:bg-accent-hover hover:shadow-[0_8px_24px_rgba(59,130,246,0.25)]',
+    'bg-accent/65 font-display font-semibold text-[var(--accent-text)] border border-accent/70 shadow-[0_4px_16px_var(--accent-glow)] hover:bg-accent/80 hover:shadow-[0_8px_24px_rgba(59,130,246,0.25)]',
   secondary:
-    'bg-accent/8 backdrop-blur-sm font-display font-semibold text-accent border border-accent/25 hover:border-accent/45 hover:bg-accent/16 shadow-[0_4px_12px_rgba(0,0,0,0.03)]',
+    'bg-accent/8 backdrop-blur-md font-display font-semibold text-accent border border-accent/25 hover:border-accent/45 hover:bg-accent/16 shadow-[0_4px_12px_rgba(0,0,0,0.03)]',
   ghost:
-    'bg-bg-surface/30 backdrop-blur-sm text-text-secondary border border-border font-display font-medium hover:border-accent/35 hover:bg-bg-elevated hover:text-text-primary shadow-[0_4px_12px_rgba(0,0,0,0.02)]',
+    'bg-bg-surface/20 backdrop-blur-md text-text-secondary border border-border font-display font-medium hover:border-accent/35 hover:bg-bg-surface/35 hover:text-text-primary shadow-[0_4px_12px_rgba(0,0,0,0.02)]',
   danger:
-    'bg-red/8 backdrop-blur-sm font-display font-semibold text-red border border-red/25 hover:bg-red/15 hover:border-red/45 shadow-[0_4px_12px_rgba(0,0,0,0.02)]',
+    'bg-red/8 backdrop-blur-md font-display font-semibold text-red border border-red/25 hover:bg-red/15 hover:border-red/45 shadow-[0_4px_12px_rgba(0,0,0,0.02)]',
 }
 
 const sizes = {

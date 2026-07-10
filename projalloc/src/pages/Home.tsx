@@ -225,12 +225,12 @@ export function Home() {
               </button>
             </div>
 
-            {/* Filters Dropdown Action Button */}
-            <div className="relative">
+            <div className="relative md:hidden">
               <button
+                type="button"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className={cn(
-                  "flex items-center justify-center gap-1.5 rounded-xl border px-4 py-2 text-xs font-display font-bold text-text-primary transition-all h-9 cursor-pointer",
+                  "flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border px-4 py-2 text-xs font-display font-bold text-text-primary transition-all cursor-pointer sm:w-auto",
                   dropdownOpen
                     ? "border-accent bg-accent/5 text-accent"
                     : "border-border bg-white dark:bg-[#14120B] hover:bg-bg-base"
@@ -239,41 +239,37 @@ export function Home() {
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                 </svg>
-                <span>
-                  {filter === 'all' ? 'Filters' : `Status: ${FILTERS.find(f => f.value === filter)?.label}`}
-                </span>
+                <span>{filter === 'all' ? 'Filters' : `Status: ${FILTERS.find(f => f.value === filter)?.label}`}</span>
               </button>
 
-              {/* Dropdown Menu Container */}
               <AnimatePresence>
                 {dropdownOpen && (
                   <>
-                    {/* Click backdrop to close */}
                     <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
-                    
                     <motion.div
                       initial={{ opacity: 0, y: 8, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-52 z-50 rounded-xl border border-border bg-white dark:bg-[#14120B] p-1.5 shadow-lg"
+                      className="absolute right-0 z-50 mt-2 w-52 rounded-xl border border-border bg-white p-1.5 shadow-lg dark:bg-[#14120B]"
                     >
-                      <div className="px-3.5 py-2 border-b border-border/40 text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                      <div className="border-b border-border/40 px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider text-text-muted">
                         Filter by status
                       </div>
-                      <div className="py-1 space-y-0.5">
+                      <div className="space-y-0.5 py-1">
                         {FILTERS.map((f) => {
                           const count = counts[f.value]
                           const active = filter === f.value
                           return (
                             <button
                               key={f.value}
+                              type="button"
                               onClick={() => {
                                 setFilter(f.value)
                                 setDropdownOpen(false)
                               }}
                               className={cn(
-                                "w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-display font-semibold text-left transition-colors cursor-pointer",
+                                "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-display font-semibold transition-colors cursor-pointer",
                                 active
                                   ? "bg-accent/10 text-accent"
                                   : "text-text-secondary hover:bg-bg-base hover:text-text-primary"
@@ -282,7 +278,7 @@ export function Home() {
                               <span>{f.label}</span>
                               <span
                                 className={cn(
-                                  "inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 font-mono text-[9px] font-bold border transition-colors",
+                                  "inline-flex h-4 min-w-4 items-center justify-center rounded-full border px-1 font-mono text-[9px] font-bold transition-colors",
                                   active
                                     ? "border-accent/20 bg-accent/10 text-accent"
                                     : "border-border bg-bg-base text-text-muted"
@@ -298,6 +294,38 @@ export function Home() {
                   </>
                 )}
               </AnimatePresence>
+            </div>
+
+            <div className="hidden gap-1 overflow-x-auto rounded-full border border-border/70 bg-white/70 p-1 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:bg-[#14120B]/45 md:flex">
+              {FILTERS.map((f) => {
+                const count = counts[f.value]
+                const active = filter === f.value
+                return (
+                  <button
+                    key={f.value}
+                    type="button"
+                    onClick={() => setFilter(f.value)}
+                    className={cn(
+                      "inline-flex h-10 shrink-0 items-center gap-2 rounded-full px-5 text-sm font-display font-bold transition-colors cursor-pointer",
+                      active
+                        ? "bg-slate-900 text-white shadow-[0_8px_18px_rgba(15,23,42,0.18)] dark:bg-[#eefbf2] dark:text-[#111812]"
+                        : "text-slate-600 hover:text-slate-900 dark:text-[#d8eee0] dark:hover:text-white",
+                    )}
+                  >
+                    <span>{f.label}</span>
+                    <span
+                      className={cn(
+                        "inline-flex h-5 min-w-5 items-center justify-center rounded-full border px-1.5 font-mono text-[10px] font-bold",
+                        active
+                          ? "border-white/30 bg-white/10 text-white dark:border-[#111812]/20 dark:bg-[#111812]/8 dark:text-[#111812]"
+                          : "border-slate-300 bg-white/40 text-slate-500 dark:border-[#d8eee0]/25 dark:bg-transparent dark:text-[#d8eee0]/75",
+                      )}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
 
           </div>
