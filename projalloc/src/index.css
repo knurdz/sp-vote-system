@@ -30,6 +30,7 @@
   --border: rgba(237, 236, 236, 0.08);
   --accent: #edecec;
   --accent-hover: #f7f7f4;
+  --accent-text: #14120B;
   --accent-glow: rgba(237, 236, 236, 0.06);
   --text-primary: #edecec;
   --text-secondary: rgba(237, 236, 236, 0.75);
@@ -86,6 +87,7 @@
   --border: rgba(15, 23, 42, 0.08);
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
+  --accent-text: #ffffff;
   --accent-glow: rgba(37, 99, 235, 0.08);
   --text-primary: #0f172a;
   --text-secondary: #475569;

@@ -8,7 +8,7 @@ interface ButtonProps extends HTMLMotionProps<'button'> {
 
 const variants = {
   primary:
-    'bg-accent font-display font-semibold text-white border border-accent shadow-[0_4px_16px_var(--accent-glow)] hover:bg-accent-hover hover:shadow-[0_8px_24px_rgba(59,130,246,0.25)]',
+    'bg-accent font-display font-semibold text-[var(--accent-text)] border border-accent shadow-[0_4px_16px_var(--accent-glow)] hover:bg-accent-hover hover:shadow-[0_8px_24px_rgba(59,130,246,0.25)]',
   secondary:
     'bg-accent/8 backdrop-blur-sm font-display font-semibold text-accent border border-accent/25 hover:border-accent/45 hover:bg-accent/16 shadow-[0_4px_12px_rgba(0,0,0,0.03)]',
   ghost:

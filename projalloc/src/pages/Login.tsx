@@ -77,7 +77,7 @@ export function Login() {
 
           <Button
             size="lg"
-            className="w-full inline-flex items-center justify-center cursor-pointer !text-white"
+            className="w-full inline-flex items-center justify-center cursor-pointer"
             disabled={signingIn}
             onClick={() => void handleSignIn()}
           >
