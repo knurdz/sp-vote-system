@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePolling } from '@/hooks/usePolling'
 import { useSubmitLock } from '@/hooks/useSubmitLock'
-import { canVoteForProject } from '@/hooks/voteEligibility'
 
 interface TeamAssignment {
   projectId: string
@@ -52,13 +51,15 @@ async function teamHasVoteOnProject(projectId: string, teamId: string): Promise<
   return (count ?? 0) > 0
 }
 
-export function useVote(projectId: string | undefined, cvRequired = false) {
+export function useVote(projectId: string | undefined) {
   const { user, role, loading: authLoading } = useAuth()
   const userEmail = user?.email
   const [hasVoted, setHasVoted] = useState(false)
   const [voteId, setVoteId] = useState<string | null>(null)
   const [teamId, setTeamId] = useState<string | null>(null)
   const [cvUploaded, setCvUploaded] = useState(false)
+  const [cvUploadDeadline, setCvUploadDeadline] = useState<string>('')
+  const [uploadDeadlinePassed, setUploadDeadlinePassed] = useState(false)
   const [assignment, setAssignment] = useState<TeamAssignment | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
@@ -86,6 +87,17 @@ export function useVote(projectId: string | undefined, cvRequired = false) {
 
     setTeamId(team.id)
     setCvUploaded(!!team.cv_url)
+
+    const { data: settings } = await supabase
+      .from('settings')
+      .select('cv_upload_deadline')
+      .eq('id', 1)
+      .single()
+
+    if (settings) {
+      setCvUploadDeadline(settings.cv_upload_deadline)
+      setUploadDeadlinePassed(new Date() > new Date(settings.cv_upload_deadline))
+    }
 
     const assigned = await fetchTeamAssignment(team.id)
     setAssignment(assigned)
@@ -116,16 +128,27 @@ export function useVote(projectId: string | undefined, cvRequired = false) {
       setActionLoading(true)
       setError(null)
 
-      const { data: teamCheck } = cvRequired
-        ? await supabase
-            .from('teams')
-            .select('cv_url')
-            .eq('id', teamId)
-            .single()
-        : { data: null }
+      // Check CV and settings state at action time
+      const { data: teamCheck } = await supabase
+        .from('teams')
+        .select('cv_url')
+        .eq('id', teamId)
+        .single()
 
-      if (cvRequired && !teamCheck?.cv_url) {
+      if (!teamCheck?.cv_url) {
         setError('Your team must upload a CV ZIP file before you can vote.')
+        setActionLoading(false)
+        return
+      }
+
+      const { data: settings } = await supabase
+        .from('settings')
+        .select('cv_upload_deadline')
+        .eq('id', 1)
+        .single()
+
+      if (settings && new Date() <= new Date(settings.cv_upload_deadline)) {
+        setError('Voting is locked until the CV upload period closes.')
         setActionLoading(false)
         return
       }
@@ -158,7 +181,7 @@ export function useVote(projectId: string | undefined, cvRequired = false) {
       }
       await fetchVoteState()
     })
-  }, [projectId, userEmail, teamId, assignment, cvRequired, fetchVoteState, runLocked])
+  }, [projectId, userEmail, teamId, assignment, fetchVoteState, runLocked])
 
   const withdraw = useCallback(async () => {
     await runLocked(async () => {
@@ -195,8 +218,10 @@ export function useVote(projectId: string | undefined, cvRequired = false) {
     assignment,
     assignedElsewhere,
     cvUploaded,
+    cvUploadDeadline,
+    uploadDeadlinePassed,
     role,
-    canVote: canVoteForProject(role, teamId, assignedElsewhere, cvRequired, cvUploaded),
+    canVote: role === 'leader' && !!teamId && !assignedElsewhere && cvUploaded && uploadDeadlinePassed,
     vote,
     withdraw,
   }

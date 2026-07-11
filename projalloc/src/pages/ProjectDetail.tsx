@@ -309,7 +309,7 @@ export function ProjectDetail() {
                     <p className="text-xs text-text-secondary mb-4 leading-relaxed">
                       Team leaders can submit one vote per project. Votes can be withdrawn until the closing date.
                     </p>
-                    <VoteButton projectId={project.id} votingOpen cvRequired={project.cv_required} />
+                    <VoteButton projectId={project.id} votingOpen />
                   </section>
                 ) : (
                   <section className="rounded-2xl border border-border bg-white dark:bg-[#14120B] p-6 shadow-panel text-center">
@@ -427,7 +427,7 @@ export function ProjectDetail() {
                     </ul>
                   ) : (
                     <p className="text-xs text-text-muted leading-relaxed">
-                      No eligible candidate teams verified for the spin event yet. Teams appear here after they vote.
+                      No eligible candidate teams verified for the spin event yet. Teams must vote and upload CVs to appear here.
                     </p>
                   )}
                 </section>

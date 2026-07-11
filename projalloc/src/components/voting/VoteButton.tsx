@@ -2,14 +2,14 @@ import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
 import { Spinner } from '@/components/ui/Spinner'
 import { useVote } from '@/hooks/useVote'
+import { formatDateTime } from '@/lib/utils'
 
 interface VoteButtonProps {
   projectId: string
   votingOpen: boolean
-  cvRequired?: boolean
 }
 
-export function VoteButton({ projectId, votingOpen, cvRequired = false }: VoteButtonProps) {
+export function VoteButton({ projectId, votingOpen }: VoteButtonProps) {
   const {
     hasVoted,
     loading,
@@ -19,10 +19,12 @@ export function VoteButton({ projectId, votingOpen, cvRequired = false }: VoteBu
     assignedElsewhere,
     assignment,
     cvUploaded,
+    cvUploadDeadline,
+    uploadDeadlinePassed,
     role,
     vote,
     withdraw,
-  } = useVote(projectId, cvRequired)
+  } = useVote(projectId)
 
   if (!votingOpen) return null
 
@@ -36,13 +38,32 @@ export function VoteButton({ projectId, votingOpen, cvRequired = false }: VoteBu
     )
   }
 
-  if (role === 'leader' && cvRequired && !cvUploaded) {
-    return (
-      <Alert
-        variant="error"
-        message="Voting locked. This project requires your team's CV ZIP archive before you can vote."
-      />
-    )
+  // Show locking warnings to team leaders
+  if (role === 'leader') {
+    // 1. If CV upload deadline has not passed, block voting
+    if (cvUploadDeadline && !uploadDeadlinePassed) {
+      return (
+        <div className="space-y-2">
+          <Alert
+            variant="info"
+            message={`Voting will open after the CV upload window closes on ${formatDateTime(cvUploadDeadline)}.`}
+          />
+          <p className="text-[11px] text-text-muted text-center italic font-medium">
+            Make sure your team has uploaded its ZIP archive in your Home page workspace before this deadline!
+          </p>
+        </div>
+      )
+    }
+
+    // 2. If deadline has passed, but this team didn't upload a CV ZIP
+    if (uploadDeadlinePassed && !cvUploaded) {
+      return (
+        <Alert
+          variant="error"
+          message="Voting locked. Your team is ineligible to vote because CV ZIP archive was not uploaded before the deadline."
+        />
+      )
+    }
   }
 
   if (!canVote) return null
