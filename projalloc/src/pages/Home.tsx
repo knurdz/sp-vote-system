@@ -103,13 +103,14 @@ export function Home() {
     }),
     [allProjects],
   )
+  const hasCvRequiredVotingProject = allProjects.some((p) => p.status === 'voting' && p.cv_required)
 
   return (
     <PageWrapper>
       <div className="relative z-10 space-y-6">
         
         {/* Banner Announcement (If leader is missing CV submission) */}
-        {role === 'leader' && team && !team.cv_url && (
+        {role === 'leader' && team && !team.cv_url && hasCvRequiredVotingProject && (
           <div className="rounded-2xl border border-amber-500/25 bg-amber-500/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300">
             <div className="flex items-start gap-3">
               <div className="h-9 w-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0 mt-0.5">
@@ -118,9 +119,9 @@ export function Home() {
                 </svg>
               </div>
               <div className="text-left">
-                <h3 className="font-display text-sm font-bold text-text-primary">CV Upload Required</h3>
+                <h3 className="font-display text-sm font-bold text-text-primary">CV Upload Required for Some Projects</h3>
                 <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">
-                  Your team <span className="font-bold text-text-primary">{team.name}</span> must upload a single ZIP containing CVs of all members in the workspace to participate in project voting.
+                  Your team <span className="font-bold text-text-primary">{team.name}</span> can vote on regular projects now, but CV Required projects need a ZIP archive first.
                 </p>
               </div>
             </div>

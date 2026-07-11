@@ -448,7 +448,7 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
                   !
                 </div>
                 <p className="text-xs text-text-secondary leading-relaxed">
-                  <span className="font-bold text-text-primary">Ineligibility lock:</span> Teams missing CV archives when the window closes are locked out of project voting.
+                  <span className="font-bold text-text-primary">CV Required projects:</span> Teams missing CV archives cannot vote on projects marked CV Required.
                 </p>
               </div>
             </div>
@@ -470,7 +470,7 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
                     <div className="space-y-1">
                       <p className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Eligible & Ready</p>
                       <p className="text-[11px] text-text-secondary leading-relaxed">
-                        Your CV folder has been successfully uploaded and locked in. Your team is eligible for project allocation.
+                        Your CV folder has been successfully uploaded and locked in. Your team can vote on CV Required projects.
                       </p>
                     </div>
                   </div>
@@ -482,9 +482,9 @@ export function TeamWorkspace({ team, onUpdate }: TeamWorkspaceProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                     <div className="space-y-1">
-                      <p className="text-xs font-bold text-rose-500 uppercase tracking-wider">Locked - Ineligible</p>
+                      <p className="text-xs font-bold text-rose-500 uppercase tracking-wider">CV Required Locked</p>
                       <p className="text-[11px] text-text-secondary leading-relaxed">
-                        No archive was uploaded prior to the deadline. Your team's voting access is locked out.
+                        No archive was uploaded prior to the deadline. Your team can still vote on regular projects.
                       </p>
                     </div>
                   </div>
